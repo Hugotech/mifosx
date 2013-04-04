@@ -67,7 +67,9 @@ public class FinancialTransactionApiResource {
 		boolean prettyPrint = ApiParameterHelper.prettyPrint(uriInfo.getQueryParameters());
 
 		List<FinancialTransactionsData> transactionData = this.billMasterReadPlatformService.retrieveInvoiceFinancialData(clientId);
-
+    
+		
+		
 
 
 		return this.apiJsonSerializerService.serializeTransactionalDataToJson(prettyPrint, responseParameters, transactionData);
@@ -94,9 +96,9 @@ public class FinancialTransactionApiResource {
 
 		List<FinancialTransactionsData> transactionData = this.billMasterReadPlatformService.retrieveSingleInvoiceData(invoiceId);
 
+		FinancialTransactionsData data=new FinancialTransactionsData(transactionData);
 
-
-		return this.apiJsonSerializerService.serializeTransactionalDataToJson(prettyPrint, responseParameters, transactionData);
+		return this.apiJsonSerializerService.serializeTransactionalDataToJson(prettyPrint, responseParameters, data);
 	}
 
 }

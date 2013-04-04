@@ -24,6 +24,15 @@ public class BillingOrderData {
 	private Date billStartDate;
 	private Date billEndDate;
 	private Long orderstatus;
+	private Long orderId;
+	
+	
+	public BillingOrderData(final Long orderId,final String durationType,final Date startDate ){
+		this.orderId = orderId;
+		this.durationType = durationType;
+		this.startDate = startDate;
+		
+	}
 
 
 
@@ -51,6 +60,19 @@ public class BillingOrderData {
 		this.billEndDate = billEndDate;
 		this.orderstatus=orderstatus;
 
+	}
+	
+	
+	public BillingOrderData(final Long itemId,final Long clientId,final Date startDate,final String chargeCode,final String chargeType,
+			final BigDecimal price){
+		
+		this.clientOrderId = itemId;
+		this.clientId = clientId;
+		this.startDate = startDate;
+		this.chargeCode = chargeCode;
+		this.chargeType = chargeType;
+		this.price = price;
+		
 	}
 
 	public Long getClientId() {
@@ -171,7 +193,13 @@ public class BillingOrderData {
 	public Long getOrderStatus() {
 		return orderstatus;
 	}
-	
-	
 
+	public Long getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(Long orderId) {
+		this.orderId = orderId;
+	}
+	
 }

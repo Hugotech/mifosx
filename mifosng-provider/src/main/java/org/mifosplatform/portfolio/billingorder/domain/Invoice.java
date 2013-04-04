@@ -35,6 +35,9 @@ public class Invoice {
 
 	@Column(name="invoice_status")
 	private String invoiceStatus;
+	
+	@Column(name="bill_id")
+	private Long billId;
 
 	@Column(name="createdby_id")
 	private Long createdBy;
@@ -158,6 +161,11 @@ public class Invoice {
 
 	public void setLastModifedById(Long lastModifedById) {
 		this.lastModifedById = lastModifedById;
+	}
+
+	public void updateBillId(Long billId) {
+		this.billId=billId;
+		
 	}
 
 

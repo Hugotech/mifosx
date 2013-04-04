@@ -2,6 +2,7 @@ package org.mifosplatform.portfolio.financialtransaction.data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import org.joda.time.LocalDate;
 
@@ -23,6 +24,8 @@ public class FinancialTransactionsData {
 	private BigDecimal taxAmount;
 	private LocalDate chargeStartDate;
 	private LocalDate chargeEndDate;
+	private List<FinancialTransactionsData> transactionsDatas;
+	
 
 	public FinancialTransactionsData(final Long transactionId,final Date transactionDate,String transactionType,BigDecimal amount) {
 		this.transactionId = transactionId;
@@ -69,6 +72,11 @@ public class FinancialTransactionsData {
 		this.taxAmount=taxAmount;
 		this.chargeStartDate=chargeStartDate;
 		this.chargeEndDate=chargeEndDate;
+	}
+
+	public FinancialTransactionsData(
+			List<FinancialTransactionsData> transactionData) {
+		this.transactionsDatas=transactionData;
 	}
 
 	public Long getTransactionId() {

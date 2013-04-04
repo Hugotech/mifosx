@@ -11,11 +11,13 @@ import org.mifosplatform.infrastructure.core.data.EnumOptionData;
 import org.mifosplatform.infrastructure.core.domain.JdbcSupport;
 import org.mifosplatform.infrastructure.core.service.TenantAwareRoutingDataSource;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
+import org.mifosplatform.portfolio.ticketmaster.data.ClientTicketData;
 import org.mifosplatform.portfolio.ticketmaster.data.ProblemsData;
 import org.mifosplatform.portfolio.ticketmaster.data.TicketMasterData;
 import org.mifosplatform.portfolio.ticketmaster.data.UsersData;
 import org.mifosplatform.portfolio.ticketmaster.domain.PriorityType;
 import org.mifosplatform.portfolio.ticketmaster.domain.PriorityTypeEnum;
+import org.mifosplatform.useradministration.domain.AppUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -216,7 +218,7 @@ public class TicketMasterReadPlatformServiceImpl  implements TicketMasterReadPla
 
 				TicketDataMapper mapper = new TicketDataMapper();
 
-				String sql = "select " + mapper.schema()+"where t.ticket_id=?";
+				String sql = "select " + mapper.schema()+"where t.ticket_id=tm.id and t.ticket_id=?";
 
 				return this.jdbcTemplate.query(sql, mapper, new Object[] { ticketId});
 			}
@@ -225,8 +227,8 @@ public class TicketMasterReadPlatformServiceImpl  implements TicketMasterReadPla
 					RowMapper<TicketMasterData> {
 
 				public String schema() {
-					return "t.id as id,t.created_date AS createDate,t.assigned_to AS assignedTo,t.comments AS description,t.attachments AS attachments"
-							+" FROM ticket_details t  ";
+					return " t.id AS id,t.created_date AS createDate,t.assigned_to AS assignedTo,t.comments as description," +
+							"t.attachments AS attachments  FROM ticket_details t,ticket_master tm  ";
 
 				}
 
@@ -250,6 +252,45 @@ public class TicketMasterReadPlatformServiceImpl  implements TicketMasterReadPla
 
 				}
 
+			}
+
+
+			@Override
+			public List<ClientTicketData> retrieveAssignedTickets() {
+				AppUser user = this.context.authenticatedUser();
+				
+				final UserTicketsMapper mapper = new UserTicketsMapper();
+
+				final String sql = "select " + mapper.userTicketSchema()+" AND a.assigned_to= ? ";
+
+				return jdbcTemplate.query(sql, mapper, new Object[] { user.getId() });
+				
+			}
+			
+			private static final class UserTicketsMapper implements RowMapper<ClientTicketData> {
+				
+				public String userTicketSchema() {
+					return " a.id as id, a.priority as priority, a.status as status, a.assigned_to as userId, a.ticket_date as ticketDate, " 
+						+  " (Select comments from ticket_details x where a.id=x.ticket_id and x.id=(select max(id) from ticket_details y where a.id=y.ticket_id)) as LastComment, "
+						+  " b.problem_description as problemDescription , username as assignedTo , a.client_id as clientId "				
+						+  " from ticket_master a, problems b, m_appuser c where a.problem_code=b.problem_code and a.assigned_to=c.id ";
+					}
+
+				@Override
+				public ClientTicketData mapRow(ResultSet rs, int rowNum) throws SQLException {
+					final Long id = rs.getLong("id");
+					final String priority = rs.getString("priority");
+					final String status = rs.getString("status");
+					final Long userId = rs.getLong("userId");
+					final LocalDate ticketDate=JdbcSupport.getLocalDate(rs,"ticketDate");
+					final String lastComment = rs.getString("LastComment");
+					final String problemDescription = rs.getString("problemDescription");
+					final String assignedTo = rs.getString("assignedTo");
+					final Long clientId = rs.getLong("clientId");
+					
+					return new ClientTicketData(id, priority, status, userId, ticketDate, lastComment, problemDescription, assignedTo, clientId);
+				}
+				
 			}
 
 	}

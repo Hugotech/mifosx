@@ -135,8 +135,9 @@ public class ClientReadPlatformServiceImpl implements ClientReadPlatformService 
         public String clientSchema() {
             return "c.account_no as accountNo,c.office_id as officeId, o.name as officeName, c.id as id, c.firstname as firstname, c.lastname as lastname," +
 			"c.fullname as fullname, c.display_name as displayName, "
-                    + " c.middlename as middlename,c.external_id as externalId, c.joined_date as joinedDate, c.image_key as imagekey,cb.balance_amount as balance from m_client c join m_office o on o.id = c.office_id" +
-                    " left join client_balance cb on cb.client_id=c.id "
+                    + " c.middlename as middlename,c.external_id as externalId, c.joined_date as joinedDate, c.image_key as imagekey,cb.balance_amount as balance, ca.address_id as addrId,"
+			+"ca.street as street,ca.city as city,ca.state as state,ca.country as country,ca.address_no as addressNo,ca.zip as zip from m_client c join m_office o on o.id = c.office_id" +
+                    " left join client_balance cb on cb.client_id=c.id  LEFT JOIN client_address ca  ON ca.client_id = c.id "
                     + " where o.hierarchy like ? and c.is_deleted=0 ";
         }
 
@@ -156,9 +157,23 @@ public class ClientReadPlatformServiceImpl implements ClientReadPlatformService 
             final String imageKey = rs.getString("imageKey");
             final String officeName = rs.getString("officeName");
             final BigDecimal balance = rs.getBigDecimal("balance");
+            final Long addrId = JdbcSupport.getLong(rs, "addrId");
+            final String street = rs.getString("street");
+            final String addressNo = rs.getString("addressNo");
+            final String city = rs.getString("city");
+            final String state = rs.getString("state");
+            final String country = rs.getString("country");
+            final String zip = rs.getString("zip");
+            
+            boolean flag =true;
+            if(addrId == null)
+            {
+            	 flag = false;
+            }
+            
 
             return new ClientData(accountNo, officeId, officeName, id, firstname, middlename, lastname, fullname, displayName, externalId,
-                    joinedDate, imageKey, null, null, null,balance);
+                    joinedDate, imageKey, null, null, null,balance,addrId,addressNo,street,city,state,country,zip,flag);
         }
 
     }
@@ -547,7 +562,7 @@ public class ClientReadPlatformServiceImpl implements ClientReadPlatformService 
             final Long officeId = rs.getLong("officeId");
             final String officeName = rs.getString("officeName");
 
-            return ClientData.clientIdentifier(id, accountNo, firstname, middlename, lastname, fullname, displayName, officeId, officeName,null);
+            return ClientData.clientIdentifier(id, accountNo, firstname, middlename, lastname, fullname, displayName, officeId, officeName,null,null,null,null,null,null,null,null,false);
         }
     }
 
@@ -580,7 +595,7 @@ public List<OrderData> retrieveClientOrderDetails(Long clientId) {
 try {
 final ClientOrderMapper mapper = new ClientOrderMapper();
 
-final String sql = "select " + mapper.clientOrderLookupSchema()+" where o.plan_id = p.id and o.client_id= ? and o.is_deleted='n' ";
+final String sql = "select " + mapper.clientOrderLookupSchema()+" where o.plan_id = p.id and o.client_id= ? and o.is_deleted='n' and o.contract_period = co.id order by o.id desc";
 
 return jdbcTemplate.query(sql, mapper, new Object[] { clientId});
 } catch (EmptyResultDataAccessException e) {
@@ -592,8 +607,9 @@ return null;
 private static final class ClientOrderMapper implements RowMapper<OrderData> {
 
 public String clientOrderLookupSchema() {
-return "o.id as id, o.plan_id as plan_id,o.start_date as start_date,o.order_status as order_status,p.plan_code as plan_code,o.contract_period as contract_period,"
-+"o.end_date as end_date,(select sum(ol.price) as price from order_price ol where o.id=ol.order_id) as price from orders o,plan_master p";
+return "o.id AS id, o.plan_id AS plan_id, o.start_date AS start_date,o.order_status AS order_status,p.plan_code AS plan_code,"
+		+"o.end_date AS end_date,co.contract_period as contractPeriod ,  (SELECT sum(ol.price) AS price FROM order_price ol"
+		+" WHERE o.id = ol.order_id)  AS price  FROM orders o, plan_master p,contract_period co";
 }
 
 @Override
@@ -602,6 +618,7 @@ public OrderData mapRow(final ResultSet rs, @SuppressWarnings("unused") final in
 final Long id = rs.getLong("id");
 final Long planId = rs.getLong("plan_id");
 final String plancode = rs.getString("plan_code");
+final String contractPeriod = rs.getString("contractPeriod");
 final int statusId = rs.getInt("order_status");
 LocalDate startDate=JdbcSupport.getLocalDate(rs,"start_date");
 LocalDate endDate=JdbcSupport.getLocalDate(rs,"end_date");
@@ -611,7 +628,7 @@ final double price=rs.getDouble("price");
 EnumOptionData Enumstatus=SavingStatusEnumaration.interestCompoundingPeriodType(statusId);
 String status=Enumstatus.getValue();
 
-return new OrderData(id, planId, plancode, status, startDate,endDate,price);
+return new OrderData(id, planId, plancode, status, startDate,endDate,price,contractPeriod);
 }
 }
 

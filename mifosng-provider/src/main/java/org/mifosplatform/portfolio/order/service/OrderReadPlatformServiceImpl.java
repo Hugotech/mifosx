@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.joda.time.LocalDate;
 import org.mifosplatform.infrastructure.core.domain.JdbcSupport;
 import org.mifosplatform.infrastructure.core.service.TenantAwareRoutingDataSource;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
@@ -112,7 +113,7 @@ public class OrderReadPlatformServiceImpl implements OrderReadPlatformService
 
 
 	@Override
-	public OrderPriceData retrieveOrderPriceData(Long orderId) {
+	public List<OrderPriceData> retrieveOrderPriceData(Long orderId) {
 		 context.authenticatedUser();
 
 	        /*String sql = "select s.id as id,s.order_id as order_id,s.charge_code as charge_code,s.service_id as service_id,s.charge_type as charge_type,s.charge_duration as charge_duration,"
@@ -126,7 +127,7 @@ public class OrderReadPlatformServiceImpl implements OrderReadPlatformService
 	        
 	        String sql = "select " + orderPriceMapper.schema();
 
-	        return this.jdbcTemplate.queryForObject(sql, rm, new Object[] { orderId });
+	        return this.jdbcTemplate.query(sql, rm, new Object[] { orderId });
 	}
 
 	 private static final class OrderPriceMapper implements RowMapper<OrderPriceData> {
@@ -149,7 +150,7 @@ public class OrderReadPlatformServiceImpl implements OrderReadPlatformService
 	            String durationtype = rs.getString("duration_type");
 	            BigDecimal price=rs.getBigDecimal("price");
 
-	            return new OrderPriceData(id,orderId,serviceId,chargeCode,chargeType,chargeDuration,durationtype,price);
+	            return new OrderPriceData(id,orderId,serviceId,chargeCode,chargeType,chargeDuration,durationtype,price, null, null, null, null);
 	        }
 
 	}
@@ -745,12 +746,10 @@ return null;
 		 RowMapper<OrderPriceData> rm = new OrderPriceDataMapper();
 
 	      	        
-	        String sql = "SELECT p.id AS id,o.client_id AS clientId,p.order_id AS order_id," +
-	        		    " c.charge_description AS chargeDescription,s.service_description AS serviceDescription,"
-	        		+"p.charge_type AS charge_type,p.charge_duration AS chargeDuration,p.duration_type AS durationType,"
-	        		+"p.price AS price  FROM order_price p, charge_codes c, service s,orders o" +
-	        		"  WHERE  p.charge_code = c.charge_code AND p.service_id = s.id and o.id =p.order_id"
-	        		+"  AND p.order_id =?";
+	        String sql = "SELECT p.id AS id,o.client_id AS clientId,p.order_id AS order_id,c.charge_description AS chargeDescription,"
+	        		+"s.service_description AS serviceDescription,p.charge_type AS charge_type,p.charge_duration AS chargeDuration, p.duration_type AS durationType,"
+	        		+"p.price AS price,p.bill_start_date as billStartDate,p.bill_end_date as billEndDate,p.next_billable_day as nextBillableDay,p.invoice_tilldate as invoiceTillDate  FROM order_price p,"
+	        		+"charge_codes c,service s, orders o WHERE p.charge_code = c.charge_code AND p.service_id = s.id  AND o.id = p.order_id  AND p.order_id =?";
 
 	        return this.jdbcTemplate.query(sql, rm, new Object[] { orderId });
 	}
@@ -768,8 +767,12 @@ return null;
 	            String chargeDuration = rs.getString("chargeDuration");
 	            String durationtype = rs.getString("durationType");
 	            BigDecimal price=rs.getBigDecimal("price");
+	            LocalDate billStartDate=JdbcSupport.getLocalDate(rs,"billStartDate");
+	            LocalDate billEndDate=JdbcSupport.getLocalDate(rs,"billEndDate");
+	            LocalDate nextBillDate=JdbcSupport.getLocalDate(rs,"nextBillableDay");
+	            LocalDate invoiceTillDate=JdbcSupport.getLocalDate(rs,"invoiceTillDate");
 
-	            return new OrderPriceData(id,orderId,clientId,chargeCode,chargeType,chargeDuration,durationtype,price);
+	            return new OrderPriceData(id,orderId,clientId,chargeCode,chargeType,chargeDuration,durationtype,price,billStartDate,billEndDate,nextBillDate,invoiceTillDate);
 	        
 }
 

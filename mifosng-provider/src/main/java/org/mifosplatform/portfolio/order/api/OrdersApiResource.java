@@ -217,12 +217,12 @@ CommandProcessingResult userId = this.orderWritePlatformService.createOrder(comm
 			@PathParam("orderId") final Long orderId) {
 
 List<OrderData> orederData=this.orderReadPlatformService.retrieveOrderLineData(orderId);
-OrderPriceData orderPrice=this.orderReadPlatformService.retrieveOrderPriceData(orderId);
+List<OrderPriceData> orderPrice=this.orderReadPlatformService.retrieveOrderPriceData(orderId);
 
 
-		this.orderWritePlatformService.deleteOrder(orderId,orederData,orderPrice);
+CommandProcessingResult entityIdentifier=  this.orderWritePlatformService.deleteOrder(orderId,orederData,orderPrice);
 
-		return Response.ok().build();
+return Response.ok().entity(entityIdentifier).build();
 	}
 
 	 @GET

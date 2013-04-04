@@ -18,4 +18,7 @@ public interface TicketMasterWritePlatformService {
 			InputStream inputStream);
 
 	void closeTicket(Long ticketId, TicketMasterCommand command);
+
+
+	String retrieveTicketProblems(Long ticketId);
 }

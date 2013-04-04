@@ -155,7 +155,7 @@ public class BillMasterReadPlatformServiceImplementation implements
 	private static final class BillMapper implements RowMapper<BillDetailsData> {
 
         public String billSchema() {
-            return " *from bill_master b, m_client mc left join additional_student_personal_data c on c.client_id = mc.id  WHERE b.client_id = mc.id ";
+            return " *from bill_master b, m_client mc left join client_address c on c.client_id = mc.id  WHERE b.client_id = mc.id ";
         }
 
 
@@ -165,13 +165,13 @@ public class BillMasterReadPlatformServiceImplementation implements
 
             Long id = rs.getLong("id");
             Long clientId = rs.getLong("Client_id");
-            String addrNo = rs.getString("flat_no");
+            String addrNo = rs.getString("address_no");
             String clientName = rs.getString("display_name");
             String billPeriod = rs.getString("bill_Period");
 
             String street = rs.getString("street");
-            String zip = rs.getString("zip_code");
-            String city = rs.getString("county");
+            String zip = rs.getString("zip");
+            String city = rs.getString("country");
             String state = rs.getString("state");
             String country = rs.getString("country");
 

@@ -14,23 +14,23 @@ import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 
 import org.joda.time.LocalDate;
 import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
 import org.mifosplatform.infrastructure.core.service.FileUtils;
+import org.mifosplatform.infrastructure.core.service.TenantAwareRoutingDataSource;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
 import org.mifosplatform.portfolio.adjustment.domain.Adjustment;
 import org.mifosplatform.portfolio.adjustment.domain.AdjustmentRepository;
 import org.mifosplatform.portfolio.adjustment.domain.ClientBalanceRepository;
 import org.mifosplatform.portfolio.billingmaster.command.BillMasterCommand;
 import org.mifosplatform.portfolio.billingorder.data.BillDetailsData;
-import org.mifosplatform.portfolio.billingorder.data.BillingData;
-import org.mifosplatform.portfolio.billingorder.data.DataBeanMaker;
 import org.mifosplatform.portfolio.billingorder.domain.BillingOrder;
 import org.mifosplatform.portfolio.billingorder.domain.BillingOrderRepository;
+import org.mifosplatform.portfolio.billingorder.domain.Invoice;
+import org.mifosplatform.portfolio.billingorder.domain.InvoiceRepository;
 import org.mifosplatform.portfolio.billingorder.domain.InvoiceTax;
 import org.mifosplatform.portfolio.billingorder.domain.InvoiceTaxRepository;
 import org.mifosplatform.portfolio.billingorder.exceptions.BillingOrderNoRecordsFoundException;
@@ -43,6 +43,7 @@ import org.mifosplatform.portfolio.financialtransaction.data.FinancialTransactio
 import org.mifosplatform.portfolio.payment.domain.Payment;
 import org.mifosplatform.portfolio.payment.domain.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,7 +69,10 @@ public class BillMasterWritePlatformServiceImplementation implements
 	private final AdjustmentRepository adjustmentRepository;
 	private final BillingOrderRepository billingOrderRepository;
 	private final InvoiceTaxRepository invoiceTaxRepository;
+	private final InvoiceRepository invoiceRepository;
 	private final ClientBalanceRepository clientBalanceRepository;
+	private final JdbcTemplate jdbcTemplate;
+	private final TenantAwareRoutingDataSource dataSource;
 
 	@Autowired
 	public BillMasterWritePlatformServiceImplementation(
@@ -76,39 +80,41 @@ public class BillMasterWritePlatformServiceImplementation implements
 			final BillMasterRepository billMasterRepository,
 			final BillDetailRepository billDetailRepository,
 			final PaymentRepository paymentRepository,
-		    final AdjustmentRepository adjustmentRepository,
+			final AdjustmentRepository adjustmentRepository,
 			final BillingOrderRepository billingOrderRepository,
 			final InvoiceTaxRepository invoiceTaxRepository,
-			final ClientBalanceRepository clientBalanceRepository) {
+			final InvoiceRepository invoiceRepository,
+			final ClientBalanceRepository clientBalanceRepository,
+			final TenantAwareRoutingDataSource dataSource) {
 
 		this.context = context;
 		this.billMasterRepository = billMasterRepository;
 		this.billDetailRepository = billDetailRepository;
-		this.adjustmentRepository=adjustmentRepository;
-		this.billingOrderRepository=billingOrderRepository;
-		this.invoiceTaxRepository=invoiceTaxRepository;
-		this.paymentRepository=paymentRepository;
-		this.clientBalanceRepository=clientBalanceRepository;
+		this.adjustmentRepository = adjustmentRepository;
+		this.billingOrderRepository = billingOrderRepository;
+		this.invoiceTaxRepository = invoiceTaxRepository;
+		this.paymentRepository = paymentRepository;
+		this.clientBalanceRepository = clientBalanceRepository;
+		this.invoiceRepository=invoiceRepository;
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
+		this.dataSource = dataSource;
 	}
 
 	@Transactional
 	@Override
 	public BillMaster createBillMaster(
 			List<FinancialTransactionsData> financialTransactionsDatas,
-			BillMasterCommand command,Long clientId) {
+			BillMasterCommand command, Long clientId) {
 
 		this.context.authenticatedUser();
-		BillMasterCommandValidator validator=new BillMasterCommandValidator(command);
+		BillMasterCommandValidator validator = new BillMasterCommandValidator(
+				command);
 		validator.validateForCreate();
 
-		if(financialTransactionsDatas.size()==0)
-		{
-			String msg="no Bills to Generate";
+		if (financialTransactionsDatas.size() == 0) {
+			String msg = "no Bills to Generate";
 			throw new BillingOrderNoRecordsFoundException(msg);
 		}
-
-
-
 
 		LocalDate billDate = new LocalDate();
 		BigDecimal previousBalance = BigDecimal.ZERO;
@@ -118,14 +124,10 @@ public class BillMasterWritePlatformServiceImplementation implements
 		BigDecimal paidAmount = BigDecimal.ZERO;
 		BigDecimal dueAmount = BigDecimal.ZERO;
 
-
-
-
-
-		BillMaster billMaster = new BillMaster(clientId,clientId,
-				billDate.toDate(), null, null, command.getDueDate().toDate(), previousBalance,
-				chargeAmount, adjustmentAmount, taxAmount, paidAmount,
-				dueAmount, null, command.getMessage());
+		BillMaster billMaster = new BillMaster(clientId, clientId,
+				billDate.toDate(), null, null, command.getDueDate().toDate(),
+				previousBalance, chargeAmount, adjustmentAmount, taxAmount,
+				paidAmount, dueAmount, null, command.getMessage());
 
 		billMaster = this.billMasterRepository.save(billMaster);
 
@@ -153,8 +155,9 @@ public class BillMasterWritePlatformServiceImplementation implements
 	}
 
 	@Override
-	public CommandProcessingResult updateBillMaster(List<BillDetail> billDetails,
-			BillMaster billMaster,BigDecimal clientBalance) {
+	public CommandProcessingResult updateBillMaster(
+			List<BillDetail> billDetails, BillMaster billMaster,
+			BigDecimal clientBalance) {
 		BigDecimal chargeAmount = BigDecimal.ZERO;
 		BigDecimal adjustmentAmount = BigDecimal.ZERO;
 		BigDecimal paymentAmount = BigDecimal.ZERO;
@@ -193,12 +196,11 @@ public class BillMasterWritePlatformServiceImplementation implements
 			billMaster.setTaxAmount(taxAmount);
 			billMaster.setPaidAmount(paymentAmount);
 			billMaster.setDueAmount(dueAmount);
-			billMaster.setAdjustmentsAndPayments(paymentAmount.add(adjustmentAmount));
-            billMaster.setPreviousBalance(clientBalance);
+			billMaster.setAdjustmentsAndPayments(paymentAmount
+					.add(adjustmentAmount));
+			billMaster.setPreviousBalance(clientBalance);
 
 			this.billMasterRepository.save(billMaster);
-
-
 
 		}
 		return new CommandProcessingResult(billMaster.getId());
@@ -209,24 +211,26 @@ public class BillMasterWritePlatformServiceImplementation implements
 	public String generatePdf(BillDetailsData billDetails,
 			List<FinancialTransactionsData> datas) {
 
-		String fileLocation = FileUtils.MIFOSX_BASE_DIR + File.separator+ "Print_invoice_Details";
-	//	String fileLocation = FileUtils.MIFOSX_BASE_DIR;
+		String fileLocation = FileUtils.MIFOSX_BASE_DIR + File.separator
+				+ "Print_invoice_Details";
+		// String fileLocation = FileUtils.MIFOSX_BASE_DIR;
 
-	//	String fileLocation = "/home/ubuntu" + File.separator+ "Print_invoice_Details";
+		// String fileLocation = "/home/ubuntu" + File.separator+
+		// "Print_invoice_Details";
 
 		/** Recursively create the directory if it does not exist **/
 		if (!new File(fileLocation).isDirectory()) {
 			new File(fileLocation).mkdirs();
 		}
-		String printInvoicedetailsLocation = fileLocation + File.separator + "invoice"+billDetails.getId()+".pdf";
+		String printInvoicedetailsLocation = fileLocation + File.separator
+				+ "invoice" + billDetails.getId() + ".pdf";
 
-		BillMaster billMaster=this.billMasterRepository.findOne(billDetails.getId());
+		BillMaster billMaster = this.billMasterRepository.findOne(billDetails
+				.getId());
 		billMaster.setFileName(printInvoicedetailsLocation);
 		this.billMasterRepository.save(billMaster);
 
 		try {
-
-
 
 			Document document = new Document();
 
@@ -262,17 +266,14 @@ public class BillMasterWritePlatformServiceImplementation implements
 			cell.disableBorderSide(PdfPCell.RIGHT);
 			table.addCell(cell);
 			PdfPCell cell0 = new PdfPCell();
-			
-			Paragraph add0 = new Paragraph(""+billDetails.getClientName(),b);
-			Paragraph add1 = new Paragraph(""
-											  +billDetails.getAddrNo()+""+
-											  billDetails.getStreet(), b
-											 );
+
+			Paragraph add0 = new Paragraph("" + billDetails.getClientName(), b);
+			Paragraph add1 = new Paragraph("" + billDetails.getAddrNo() + ""
+					+ billDetails.getStreet(), b);
 			add1.setSpacingBefore(10);
-			Paragraph add2 = new Paragraph(""+billDetails.getCity()+""
-					                           +billDetails.getState()+""
-					                           +billDetails.getCountry()+""
-					                           +billDetails.getZip(),b);
+			Paragraph add2 = new Paragraph("" + billDetails.getCity() + ""
+					+ billDetails.getState() + "" + billDetails.getCountry()
+					+ "" + billDetails.getZip(), b);
 			cell0.setColspan(4);
 			cell0.disableBorderSide(PdfPCell.LEFT);
 			cell0.addElement(add0);
@@ -280,11 +281,11 @@ public class BillMasterWritePlatformServiceImplementation implements
 			cell0.addElement(add2);
 			table.addCell(cell0);
 
-//			Image image = Image.getInstance("logo.jpg");
-	//image.scaleAbsolute(60, 60);
+			// Image image = Image.getInstance("logo.jpg");
+			// image.scaleAbsolute(60, 60);
 			PdfPCell cell2 = new PdfPCell();
-//		cell2.addElement(image);
-		cell2.disableBorderSide(PdfPCell.TOP);
+			// cell2.addElement(image);
+			cell2.disableBorderSide(PdfPCell.TOP);
 			cell2.disableBorderSide(PdfPCell.BOTTOM);
 			cell2.disableBorderSide(PdfPCell.LEFT);
 			cell2.disableBorderSide(PdfPCell.RIGHT);
@@ -438,10 +439,6 @@ public class BillMasterWritePlatformServiceImplementation implements
 			cell10.disableBorderSide(PdfPCell.RIGHT);
 			table.addCell(cell10);
 
-
-
-
-
 			PdfPCell cell26 = new PdfPCell();
 			cell26.setColspan(1);
 			Paragraph charge = new Paragraph("Id", b);
@@ -450,12 +447,8 @@ public class BillMasterWritePlatformServiceImplementation implements
 
 			// cell10.disableBorderSide(PdfPCell.TOP);
 			// cell10.disableBorderSide(PdfPCell.BOTTOM);
-			//cell26.disableBorderSide(PdfPCell.LEFT);
+			// cell26.disableBorderSide(PdfPCell.LEFT);
 			cell26.disableBorderSide(PdfPCell.RIGHT);
-
-
-
-
 
 			PdfPCell cell28 = new PdfPCell();
 			cell28.setColspan(1);
@@ -467,13 +460,12 @@ public class BillMasterWritePlatformServiceImplementation implements
 			cell28.disableBorderSide(PdfPCell.LEFT);
 			cell28.disableBorderSide(PdfPCell.RIGHT);
 
-
 			PdfPCell cell27 = new PdfPCell();
 			cell27.setColspan(1);
 			Paragraph Date = new Paragraph("Date", b);
 
 			cell27.addElement(Date);
-			 //cell10.disableBorderSide(PdfPCell.TOP);
+			// cell10.disableBorderSide(PdfPCell.TOP);
 			// cell10.disableBorderSide(PdfPCell.BOTTOM);
 			cell27.disableBorderSide(PdfPCell.LEFT);
 			cell27.disableBorderSide(PdfPCell.RIGHT);
@@ -488,29 +480,24 @@ public class BillMasterWritePlatformServiceImplementation implements
 			cell23.disableBorderSide(PdfPCell.LEFT);
 			cell23.disableBorderSide(PdfPCell.RIGHT);
 
+			BigDecimal totalAmount = BigDecimal.ZERO;
 
-
-                BigDecimal totalAmount=BigDecimal.ZERO;
-
-			for (FinancialTransactionsData data : datas){
+			for (FinancialTransactionsData data : datas) {
 				Paragraph id = new Paragraph("" + data.getTransactionId(), b);
 
 				cell26.addElement(id);
 
-
 				Paragraph transactionType = new Paragraph(""
 						+ data.getTransactionType(), b);
 				cell23.addElement(transactionType);
-				Paragraph date = new Paragraph(""
-						+ data.getTransDate(), b);
+				Paragraph date = new Paragraph("" + data.getTransDate(), b);
 				cell27.addElement(date);
-				Paragraph tranAmount = new Paragraph("" + data.getAmount(),b);
+				Paragraph tranAmount = new Paragraph("" + data.getAmount(), b);
 
 				cell28.addElement(tranAmount);
-				totalAmount=totalAmount.add(data.getAmount());
+				totalAmount = totalAmount.add(data.getAmount());
 
 			}
-
 
 			table.addCell(cell26);
 			table.addCell(cell23);
@@ -522,7 +509,8 @@ public class BillMasterWritePlatformServiceImplementation implements
 			cell24.disableBorderSide(PdfPCell.BOTTOM);
 			table.addCell(cell24);
 			PdfPCell cell25 = new PdfPCell();
-			Paragraph proMessage=new Paragraph(""+billDetails.getMessage(),b);
+			Paragraph proMessage = new Paragraph("" + billDetails.getMessage(),
+					b);
 			cell25.addElement(proMessage);
 			cell25.setColspan(4);
 			cell25.setPadding(70f);
@@ -532,11 +520,13 @@ public class BillMasterWritePlatformServiceImplementation implements
 			document.add(table);
 			document.close();
 
-			//This option is to open the PDF on Server. Instead we have given Financial Statement Download Option
-			/*Runtime.getRuntime().exec(
-					"rundll32 url.dll,FileProtocolHandler "+printInvoicedetailsLocation);*/
-
-
+			// This option is to open the PDF on Server. Instead we have given
+			// Financial Statement Download Option
+			/*
+			 * Runtime.getRuntime().exec(
+			 * "rundll32 url.dll,FileProtocolHandler "
+			 * +printInvoicedetailsLocation);
+			 */
 
 		} catch (Exception e) {
 		}
@@ -546,61 +536,80 @@ public class BillMasterWritePlatformServiceImplementation implements
 
 	@Override
 	public void updateBillId(
-			List<FinancialTransactionsData> financialTransactionsDatas,Long billId) {
+			List<FinancialTransactionsData> financialTransactionsDatas,
+			Long billId) {
 
-		for(FinancialTransactionsData transIds:financialTransactionsDatas)
-		{
-           if(transIds.getTransactionType().equalsIgnoreCase("ADJUSTMENT"))
-           {
-		Adjustment adjustment=this.adjustmentRepository.findOne(transIds.getTransactionId());
-		adjustment.updateBillId(billId);
-		this.adjustmentRepository.save(adjustment);
-		}
-           if(transIds.getTransactionType().equalsIgnoreCase("TAXES"))
-           {
-		InvoiceTax invoice=this.invoiceTaxRepository.findOne(transIds.getTransactionId());
-		invoice.updateBillId(billId);
-		this.invoiceTaxRepository.save(invoice);
-		}
-           if(transIds.getTransactionType().contains("PAYMENT"))
-           {
-		Payment payment=this.paymentRepository.findOne(transIds.getTransactionId());
-		payment.updateBillId(billId);
-		this.paymentRepository.save(payment);
-		}
-           if(transIds.getTransactionType().equalsIgnoreCase("CHARGES"))
-           {
-		BillingOrder billingOrder=this.billingOrderRepository.findOne(transIds.getTransactionId());
-		billingOrder.updateBillId(billId);
-		this.billingOrderRepository.save(billingOrder);
-		}
+		for (FinancialTransactionsData transIds : financialTransactionsDatas) {
+			if (transIds.getTransactionType().equalsIgnoreCase("ADJUSTMENT")) {
+				Adjustment adjustment = this.adjustmentRepository
+						.findOne(transIds.getTransactionId());
+				adjustment.updateBillId(billId);
+				this.adjustmentRepository.save(adjustment);
+			}
+			if (transIds.getTransactionType().equalsIgnoreCase("TAXES")) {
+				InvoiceTax invoice = this.invoiceTaxRepository.findOne(transIds
+						.getTransactionId());
+				invoice.updateBillId(billId);
+				this.invoiceTaxRepository.save(invoice);
+			}
+			if (transIds.getTransactionType().contains("PAYMENT")) {
+				Payment payment = this.paymentRepository.findOne(transIds
+						.getTransactionId());
+				payment.updateBillId(billId);
+				this.paymentRepository.save(payment);
+			}
+			if (transIds.getTransactionType().equalsIgnoreCase("CHARGES")) {
+				BillingOrder billingOrder = this.billingOrderRepository
+						.findOne(transIds.getTransactionId());
+				billingOrder.updateBillId(billId);
+				this.billingOrderRepository.save(billingOrder);
+			}
+			
+			if (transIds.getTransactionType().equalsIgnoreCase("INVOCE")) {
+				Invoice invoice = this.invoiceRepository.findOne(transIds.getTransactionId());
+				invoice.updateBillId(billId);
+				this.invoiceRepository.save(invoice);
+			}
 
 		}
-
 
 	}
+
+	@SuppressWarnings("unchecked")
 	@Override
-	public void ireportPdf(BillingData billDetails, List<FinancialTransactionsData> financialTransactionsDatas) {
-		
-		try
-		{
-		FileInputStream inputStream = new FileInputStream ("C:/Users/hugo/Desktop/report21.jrxml");
+	public void ireportPdf(Long billId) {
 
-		DataBeanMaker dataBeanMaker = new DataBeanMaker();
-		ArrayList<BillingData> dataBeanList = dataBeanMaker.getDataBeanList(billDetails,financialTransactionsDatas);
+		try {
+			
+			// String fileLocation = FileUtils.MIFOSX_BASE_DIR + File.separator + "Print_invoice_Details";
+			String fileLocation = FileUtils.MIFOSX_BASE_DIR;
 
-		JRBeanCollectionDataSource beanColDataSource = new 
-		JRBeanCollectionDataSource(dataBeanList);
+			// String fileLocation = "/home/ubuntu" + File.separator+
+			// "Print_invoice_Details";
+			
 
-		@SuppressWarnings("rawtypes")
-		Map parameters = new HashMap();
+			/** Recursively create the directory if it does not exist **/
+			if (!new File(fileLocation).isDirectory()) {
+				new File(fileLocation).mkdirs();
+			}
+			String printInvoicedetailsLocation = fileLocation + File.separator + "Bill_" +billId + ".pdf";
 
-		JasperDesign jasperDesign = JRXmlLoader.load(inputStream);
-		JasperReport jasperReport = JasperCompileManager.compileReport(jasperDesign);
-		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, beanColDataSource);
-		JasperExportManager.exportReportToPdfFile(jasperPrint, "c://test_jasper.pdf"); 
-		}catch(Exception exception)
-		{
+			BillMaster billMaster = this.billMasterRepository.findOne(billId);
+			billMaster.setFileName(printInvoicedetailsLocation);
+			this.billMasterRepository.save(billMaster);
+			FileInputStream inputStream = new FileInputStream(fileLocation +File.separator +"Bill_Mainreport.jrxml");
+
+			Map parameters = new HashMap();
+                 
+			String id = String.valueOf(billId);
+			parameters.put("param1", id);
+			parameters.put("SUBREPORT_DIR",fileLocation+""+File.separator);
+
+			JasperDesign jasperDesign = JRXmlLoader.load(inputStream);
+			JasperReport jasperReport = JasperCompileManager.compileReport(jasperDesign);
+			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, this.dataSource.getConnection());
+			JasperExportManager.exportReportToPdfFile(jasperPrint,printInvoicedetailsLocation);
+		} catch (Exception exception) {
 			exception.printStackTrace();
 		}
 	}

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
+import org.mifosplatform.infrastructure.core.exception.PlatformDataIntegrityException;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
 import org.mifosplatform.portfolio.plan.commands.PlansCommand;
 import org.mifosplatform.portfolio.plan.data.PlanData;
@@ -14,6 +15,11 @@ import org.mifosplatform.portfolio.plan.domain.ServiceDescription;
 import org.mifosplatform.portfolio.plan.domain.ServiceDescriptionRepository;
 import org.mifosplatform.portfolio.plan.domain.ServiceDetails;
 import org.mifosplatform.portfolio.plan.domain.ServiceRepository;
+import org.mifosplatform.portfolio.plan.exceptions.PlanCodeExist;
+import org.mifosplatform.portfolio.servicemaster.exceptions.ServiceCodeExist;
+import org.mifosplatform.portfolio.servicemaster.service.ServiceMasterWritePlatformServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -22,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PlanWritePlatformServiceImpl implements PlanWritePlatformService {
-
+	 private final static Logger logger = LoggerFactory.getLogger(PlanWritePlatformServiceImpl.class);
 	private PlatformSecurityContext context;
 	private PlanRepository planRepository;
 	private ServiceDescriptionRepository serviceDescriptionRepository;
@@ -51,6 +57,7 @@ public class PlanWritePlatformServiceImpl implements PlanWritePlatformService {
 
 			PlanCommandValidator validator=new PlanCommandValidator(command);
 			validator.validateForCreate();
+		
 			
 			@SuppressWarnings("unchecked")
 			String[] services=command.getServices();
@@ -78,7 +85,14 @@ public class PlanWritePlatformServiceImpl implements PlanWritePlatformService {
 
 	private void handleDataIntegrityIssues(PlansCommand command,
 			DataIntegrityViolationException dve) {
-		// TODO Auto-generated method stub
+		 Throwable realCause = dve.getMostSpecificCause();
+	        if (realCause.getMessage().contains("plan_code_key")) { throw new PlatformDataIntegrityException(
+	                "error.msg.plan.duplicate.code", "plan with code " + command.getplanCode()
+	                        + " already exists", "planCode", command.getplanCode()); }
+
+	        logger.error(dve.getMessage(), dve);
+	        throw new PlatformDataIntegrityException("error.msg.deposit.account.unknown.data.integrity.issue",
+	                "Unknown data integrity issue with resource.");
 
 	}
 	 @Transactional

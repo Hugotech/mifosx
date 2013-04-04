@@ -33,6 +33,7 @@ import org.mifosplatform.portfolio.plan.domain.PlanRepository;
 import org.mifosplatform.portfolio.pricing.service.PriceReadPlatformService;
 import org.mifosplatform.portfolio.savingsdepositproduct.data.TicketDetailsRepository;
 import org.mifosplatform.portfolio.ticketmaster.command.TicketMasterCommand;
+import org.mifosplatform.portfolio.ticketmaster.data.ClientTicketData;
 import org.mifosplatform.portfolio.ticketmaster.data.ProblemsData;
 import org.mifosplatform.portfolio.ticketmaster.data.TicketMasterData;
 import org.mifosplatform.portfolio.ticketmaster.data.UsersData;
@@ -187,11 +188,14 @@ public class TicketMasterApiResource {
 
 		        final Set<String> responseParameters = ApiParameterHelper.extractFieldsForResponseIfProvided(uriInfo.getQueryParameters());
 		        final boolean prettyPrint = ApiParameterHelper.prettyPrint(uriInfo.getQueryParameters());
-
-		        final List<TicketMasterData> data = this.ticketMasterReadPlatformService.retrieveClientTicketHistory(ticketId);
-
+		         
+		        String description=this.ticketMasterWritePlatformService.retrieveTicketProblems(ticketId);
+		         final List<TicketMasterData> data = this.ticketMasterReadPlatformService.retrieveClientTicketHistory(ticketId);
+		        
+		        TicketMasterData masterData=new TicketMasterData(description,data);
+                 
 		        return this.apiJsonSerializerService.serializeTicketMasterToJson(prettyPrint, responseParameters,
-		                data);
+		        		masterData);
 		    }
 			
 			@GET
@@ -211,7 +215,16 @@ public class TicketMasterApiResource {
 				response.header("Content-Type", "application/pdf");
 				return response.build();
 			}
-		   
+			@GET
+			@Path("assignedTickets")
+			@Consumes({ MediaType.APPLICATION_JSON })
+			@Produces({ MediaType.APPLICATION_JSON })
+			public String assignedTicketsForUser(@Context final UriInfo uriInfo){
+				final Set<String> responseParameters = ApiParameterHelper.extractFieldsForResponseIfProvided(uriInfo.getQueryParameters());
+			    final boolean prettyPrint = ApiParameterHelper.prettyPrint(uriInfo.getQueryParameters());
+			    final List<ClientTicketData> data = this.ticketMasterReadPlatformService.retrieveAssignedTickets();
+		        return this.apiJsonSerializerService.serializeClientTicketDataToJson(prettyPrint, responseParameters, data);
+			}
 		
 }
 

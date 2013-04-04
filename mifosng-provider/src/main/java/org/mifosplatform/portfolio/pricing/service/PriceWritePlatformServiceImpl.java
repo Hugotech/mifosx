@@ -56,12 +56,12 @@ public class PriceWritePlatformServiceImpl implements PriceWritePlatformService 
 				}
 			}
 			}
-			Price data = new Price(planId, command.getChargeCode(),
+			Price price = new Price(planId, command.getChargeCode(),
 					command.getServiceCode(), command.getChargingVariant(),
 					command.getPrice(), command.getdiscountId());
-			this.priceRepository.save(data);
+			this.priceRepository.save(price);
 
-			return new CommandProcessingResult(data.getId());
+			return new CommandProcessingResult(price.getId());
 		} catch (DataIntegrityViolationException dve) {
 			handleDataIntegrityIssues(command, dve);
 			return new CommandProcessingResult(Long.valueOf(-1));

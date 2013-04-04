@@ -8,7 +8,7 @@ import org.mifosplatform.infrastructure.core.data.EnumOptionData;
 
 public class TicketMasterData {
 	
-	private  List<TicketMasterData> statusType;
+	private  List<TicketMasterData> statusType,masterData;
 	private  List<EnumOptionData> priorityType;
     private  List<ProblemsData> problemsDatas;
     private  List<UsersData> usersData;
@@ -79,6 +79,12 @@ public class TicketMasterData {
 	     this.attachedFile=fileName;
 	     this.statusDescription=description;
 		
+	}
+
+	public TicketMasterData(String description, List<TicketMasterData> data) {
+		this.problemDescription=description;
+		this.masterData=data;
+
 	}
 
 	public List<EnumOptionData> getPriorityType() {

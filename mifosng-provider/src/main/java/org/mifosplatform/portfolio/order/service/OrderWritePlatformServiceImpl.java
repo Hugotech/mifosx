@@ -169,7 +169,7 @@ public class OrderWritePlatformServiceImpl implements OrderWritePlatformService 
 
 			for (ServiceData data : details) {
 				OrderLine orderdetails = new OrderLine(data.getPlanId(),
-						data.getCode(), plan.getStatus(), false);
+						data.getCode(), plan.getStatus(), 'n');
 				order.addServiceDeatils(orderdetails);
 			}
 
@@ -194,8 +194,8 @@ public class OrderWritePlatformServiceImpl implements OrderWritePlatformService 
 	}
 
 	@Override
-	public void deleteOrder(Long orderId, List<OrderData> orederData,
-			OrderPriceData data) {
+	public CommandProcessingResult deleteOrder(Long orderId, List<OrderData> orederData,
+			List<OrderPriceData> data) {
 		try {
 
 			Order order = this.orderRepository.findOne(orderId);
@@ -214,8 +214,13 @@ public class OrderWritePlatformServiceImpl implements OrderWritePlatformService 
 			// orderPrice.delete();
 			order.delete();
 			this.orderRepository.save(order);
+			
+
+			return new CommandProcessingResult(order.getId());
+
 		} catch (DataIntegrityViolationException dve) {
 			handleDataIntegrityIssues(dve);
+			return new CommandProcessingResult(Long.valueOf(-1));
 		}
 
 	}

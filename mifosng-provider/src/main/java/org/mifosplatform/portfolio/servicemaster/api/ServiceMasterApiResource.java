@@ -77,10 +77,7 @@ public class ServiceMasterApiResource {
 			responseParameters.addAll(typicalResponseParameters);
 		}
 	final boolean prettyPrint = ApiParameterHelper.prettyPrint(uriInfo.getQueryParameters());
-       // final Collection<ServiceMasterData> datas = this.serviceMasterReadPlatformService.retrieveAllServiceMasterData();
-        //SericeMasterOptionsData sericeMasterOptionsData=new SericeMasterOptionsData(datas);
         Collection<SericeMasterOptionsData> optionsData=new ArrayList<SericeMasterOptionsData>();
-        //optionsData.add(sericeMasterOptionsData);
 		return this.apiJsonSerializerService.serializeServiceMasterDataToJson(prettyPrint, responseParameters, optionsData);
     }
 

@@ -23,6 +23,7 @@ public class OrderData {
 	private  String status;
 	private  Long period;
 	private LocalDate startDate;
+	private LocalDate currentDate;
 	private LocalDate endDate;
 	private String billingFrequency;
 	private  List<PlanCodeData> plandata;
@@ -30,24 +31,8 @@ public class OrderData {
 	private  List<SubscriptionData> subscriptiondata;
 	private List<OrderPriceData> orderPriceData;
 	private String cancelledStatus;
-
-	/*public OrderData(final Long id,final Long did,final Long cid, final String service_code,final String plan_code,final double price,final String variant,final String charge_code)
-	{
-		this.id=id;
-		this.pcid=did;
-		this.pdid=cid;
-		this.service_code=service_code;
-		this.plan_code=plan_code;
-		this.price=price;
-		this.variant=variant;
-		this.chargeCode=charge_code;
-		this.plandata=null;
-		this.paytermdata=null;
-		this.subscriptiondata=null;
-		this.status=null;
-		this.period=null;
-	}*/
-
+	private String contractPeriod;
+	private boolean flag;
 	public OrderData(List<PlanCodeData> allowedtypes, List<PaytermData> data, List<SubscriptionData> subscription)
 	{
 		this.id=null;
@@ -66,34 +51,6 @@ public class OrderData {
 	}
 
 
-
-
-
-
-
-
-
-
-	/*public OrderData(Long id, Long plan_id, LocalDate start_date,
-			Long billing_frequency, Long contarctPeriod) {
-
-		this.id=id;
-		this.pdid=plan_id;
-		this.plan_code=null;
-		this.status=null;
-		this.period=contarctPeriod;
-		this.pcid=billing_frequency;
-		this.service_code=null;
-
-		this.startDate=start_date;
-		this.variant=null;
-		this.chargeCode=null;
-		this.paytermdata=null;
-		this.plandata=null;
-		this.subscriptiondata=null;
-
-	}
-*/
 	public OrderData(List<PlanCodeData> allowedtypes, List<PaytermData> data1,
 			List<SubscriptionData> contractPeriod, OrderData data) {
 
@@ -116,7 +73,7 @@ public class OrderData {
 
 	public OrderData(Long id, Long planId, String plancode,
 			String status, LocalDate startDate, LocalDate endDate,
-			double price) {
+			double price, String contractPeriod) {
 		this.id=id;
 		this.pdid=planId;
 		this.plan_code=plancode;
@@ -124,6 +81,7 @@ public class OrderData {
 		this.cancelledStatus="CANCELLED";
 		this.period=null;
 		this.startDate=startDate;
+		this.currentDate=new LocalDate();
 		this.endDate=endDate;
 		this.pcid=null;
 		this.service_code=null;
@@ -133,6 +91,13 @@ public class OrderData {
 		this.paytermdata=null;
 		this.plandata=null;
 		this.subscriptiondata=null;
+		this.contractPeriod=contractPeriod;
+		
+		if(startDate.equals(currentDate))
+		{
+			this.flag=true;
+		}
+		
 	}
 
 	public OrderData(Long id, Long orderId, Long serviceId, Long status,String serviceType) {

@@ -2,6 +2,9 @@ package org.mifosplatform.portfolio.order.data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Locale;
+
+import org.joda.time.LocalDate;
 
 public class OrderPriceData {
 
@@ -14,16 +17,19 @@ public class OrderPriceData {
 	private final String durationType;
 	private final BigDecimal price;
 
-	private Date invoiceTillDate;
+	private LocalDate invoiceTillDate;
 	private Long createdBy;
 	private Date createdDate;
 	private Date lastModifiedDate;
 	private Long lastModifiedBy;
 	private Long clientId;
+	private LocalDate billStartDate;
+	private LocalDate billEndDate;
+	private LocalDate nextBillDate;
 
 	public OrderPriceData(Long id, Long clientId, Long serviceId,
 			String chargeCode, String chargeType, String chargeDuration,
-			String durationtype, BigDecimal price) {
+			String durationtype, BigDecimal price, LocalDate billStartDate, LocalDate billEndDate, LocalDate nextBillDate, LocalDate invoiceTillDate) {
 
 		this.id=id;
 		this.orderId=clientId;
@@ -33,7 +39,11 @@ public class OrderPriceData {
 		this.chargeDuration=chargeDuration;
 		this.durationType=durationtype;
 		this.price=price;
+		this.billStartDate=billStartDate;
+		this.billEndDate=billEndDate;
+		this.nextBillDate=nextBillDate;
 		this.serviceId=null;
+		this.invoiceTillDate=invoiceTillDate;
 
 
 	}
@@ -97,7 +107,7 @@ public class OrderPriceData {
 		return price;
 	}
 
-	public Date getInvoiceTillDate() {
+	public LocalDate getInvoiceTillDate() {
 		return invoiceTillDate;
 	}
 

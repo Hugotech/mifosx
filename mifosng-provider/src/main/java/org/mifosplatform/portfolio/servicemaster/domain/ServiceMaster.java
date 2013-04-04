@@ -3,12 +3,13 @@ package org.mifosplatform.portfolio.servicemaster.domain;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.mifosplatform.portfolio.servicemaster.commands.ServiceMasterCommand;
 import org.springframework.data.jpa.domain.AbstractPersistable;
 
 @Entity
-@Table(name = "service")
+@Table(name = "service", uniqueConstraints = @UniqueConstraint(name = "service_code_key", columnNames = { "service_code" }))
 public class ServiceMaster extends AbstractPersistable<Long> {
 
 	@Column(name = "service_code", nullable = false, length = 20)
@@ -80,6 +81,7 @@ public ServiceMaster()
 		{}
 		else
 		{
+			this.serviceCode=this.serviceCode+"_"+this.getId()+"DELETED";
 			isDeleted="y";
 		}
 	}

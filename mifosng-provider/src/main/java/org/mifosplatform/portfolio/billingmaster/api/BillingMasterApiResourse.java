@@ -99,10 +99,9 @@ public class BillingMasterApiResourse {
 				.retrievebillDetails(billMaster.getId());
 		// List<FinancialTransactionsData>
 		// data=this.billMasterReadPlatformService.getFinancialTransactionData(billDetails.getId());
-   this.billMasterWritePlatformService.generatePdf(billDetails,
-			financialTransactionsDatas);
+      this.billMasterWritePlatformService.generatePdf(billDetails,financialTransactionsDatas);
 	
-    //this.billMasterWritePlatformService.ireportPdf(billDetails,financialTransactionsDatas);	
+    //this.billMasterWritePlatformService.ireportPdf(billMaster.getId());	
 
 		return Response.ok().entity(1).build();
 	}

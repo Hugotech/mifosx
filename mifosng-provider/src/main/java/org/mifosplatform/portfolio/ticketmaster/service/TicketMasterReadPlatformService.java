@@ -3,6 +3,7 @@ package org.mifosplatform.portfolio.ticketmaster.service;
 import java.util.List;
 
 import org.mifosplatform.infrastructure.core.data.EnumOptionData;
+import org.mifosplatform.portfolio.ticketmaster.data.ClientTicketData;
 import org.mifosplatform.portfolio.ticketmaster.data.ProblemsData;
 import org.mifosplatform.portfolio.ticketmaster.data.TicketMasterData;
 import org.mifosplatform.portfolio.ticketmaster.data.UsersData;
@@ -28,6 +29,9 @@ public interface TicketMasterReadPlatformService {
 
 
 	List<TicketMasterData> retrieveClientTicketHistory(Long ticketId);
+
+
+	List<ClientTicketData> retrieveAssignedTickets();
 
 	
 	

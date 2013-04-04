@@ -1,11 +1,14 @@
 package org.mifosplatform.portfolio.billingproduct;
 
 import org.joda.time.LocalDate;
+import org.mifosplatform.portfolio.address.command.AddressCommand;
 import org.mifosplatform.portfolio.adjustment.commands.AdjustmentCommand;
 import org.mifosplatform.portfolio.billingcycle.command.BillingCycleCommand;
 import org.mifosplatform.portfolio.billingmaster.command.BillMasterCommand;
 import org.mifosplatform.portfolio.charge.commands.ChargeCodeCommand;
 import org.mifosplatform.portfolio.discountmaster.commands.DiscountMasterCommand;
+import org.mifosplatform.portfolio.item.command.ItemCommand;
+import org.mifosplatform.portfolio.onetimesale.command.OneTimeSaleCommand;
 import org.mifosplatform.portfolio.order.command.OrdersCommand;
 import org.mifosplatform.portfolio.payment.command.Paymentcommand;
 import org.mifosplatform.portfolio.paymodes.commands.PaymodeCommand;
@@ -71,5 +74,12 @@ public interface PortfolioApiDataBillingConversionService {
 	BillMasterCommand convertJsonToBillMasterCommand(Long resourceIdentifier,String json);
 
 	TicketMasterCommand convertJsonToTicketMasterCommand(Object object,String jsonRequestBody);
+
+	AddressCommand convertJsonToAddressCommand(Object object, Long clientId,
+			String jsonRequestBody);
+
+	OneTimeSaleCommand convertJsonToSalesCommand(Object object,	String jsonRequestBody);
+
+	ItemCommand convertJsonToItemCommand(Object object, String jsonRequestBody);
 
 }

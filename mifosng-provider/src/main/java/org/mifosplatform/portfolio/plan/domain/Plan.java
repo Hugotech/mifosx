@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -20,7 +21,7 @@ import org.mifosplatform.portfolio.plan.data.PlanData;
 import org.mifosplatform.portfolio.plan.data.ServiceData;
 
 @Entity
-@Table(name = "plan_master")
+@Table(name = "plan_master", uniqueConstraints = @UniqueConstraint(name = "plan_code_key", columnNames = { "plan_code" }))
 public class Plan{
 
 
@@ -103,6 +104,30 @@ public class Plan{
 
 
 
+	public Long getId() {
+		return id;
+	}
+
+	public String getPlanCode() {
+		return planCode;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public Long getBillRule() {
+		return billRule;
+	}
+
+	public char isDeleted() {
+		return deleted;
+	}
+
 	public String getContractPeriod() {
 		return contractPeriod;
 	}
@@ -162,7 +187,7 @@ public class Plan{
 
 		} else {
 			this.deleted = 'y';
-			this.description = this.getCode() + "_DELETED_";
+			this.planCode=this.planCode+"_"+this.getId()+"_DELETED";
 
 		}
 	}

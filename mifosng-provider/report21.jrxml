@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report2" pageWidth="612" pageHeight="800" columnWidth="572" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" isIgnorePagination="true">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="62"/>
+	<property name="ireport.callouts" value="##Thu Feb 28 14:34:19 PST 2013"/>
+	<style name="Crosstab Data Text" hAlign="Center"/>
+	<subDataset name="Table Dataset 1"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\Users\\hugo\\Desktop\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="param1" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[SELECT
+     bill_master.`id` AS bill_master_id,
+     bill_master.`Bill_No` AS bill_master_Bill_No,
+     bill_master.`Client_id` AS bill_master_Client_id,
+     bill_master.`Bill_date` AS bill_master_Bill_date,
+     bill_master.`Bill_startdate` AS bill_master_Bill_startdate,
+     bill_master.`Bill_enddate` AS bill_master_Bill_enddate,
+     bill_master.`Due_date` AS bill_master_Due_date,
+     bill_master.`Previous_balance` AS bill_master_Previous_balance,
+     bill_master.`Charges_amount` AS bill_master_Charges_amount,
+     bill_master.`Adjustment_amount` AS bill_master_Adjustment_amount,
+     bill_master.`Tax_amount` AS bill_master_Tax_amount,
+     bill_master.`Paid_amount` AS bill_master_Paid_amount,
+     bill_master.`Due_amount` AS bill_master_Due_amount,
+     bill_master.`filename` AS bill_master_filename,
+     bill_master.`Promotion_description` AS bill_master_Promotion_description,
+     bill_master.`Bill_Period` AS bill_master_Bill_Period,
+     bill_master.`adjustments_payments` AS bill_master_adjustments_payments,
+         additional_student_personal_data.`client_id` AS additional_student_personal_data_client_id,
+
+     additional_student_personal_data.`flat_no` AS additional_student_personal_data_flat_no,
+     additional_student_personal_data.`building_no` AS additional_student_personal_data_building_no,
+     additional_student_personal_data.`street` AS additional_student_personal_data_street,
+     additional_student_personal_data.`county` AS additional_student_personal_data_county,
+     additional_student_personal_data.`state` AS additional_student_personal_data_state,
+     additional_student_personal_data.`country` AS additional_student_personal_data_country,
+     additional_student_personal_data.`zip_code` AS additional_student_personal_data_zip_code
+FROM
+     `bill_master` bill_master,
+     `additional_student_personal_data` additional_student_personal_data
+WHERE
+      bill_master.`Client_id`=   additional_student_personal_data.`client_id` and
+     bill_master.`id` = $P{param1}]]>
+	</queryString>
+	<field name="bill_master_id" class="java.lang.Integer"/>
+	<field name="bill_master_Bill_No" class="java.lang.String"/>
+	<field name="bill_master_Client_id" class="java.lang.Long"/>
+	<field name="bill_master_Bill_date" class="java.sql.Timestamp"/>
+	<field name="bill_master_Bill_startdate" class="java.sql.Timestamp"/>
+	<field name="bill_master_Bill_enddate" class="java.sql.Timestamp"/>
+	<field name="bill_master_Due_date" class="java.sql.Timestamp"/>
+	<field name="bill_master_Previous_balance" class="java.lang.Double"/>
+	<field name="bill_master_Charges_amount" class="java.lang.Double"/>
+	<field name="bill_master_Adjustment_amount" class="java.lang.Double"/>
+	<field name="bill_master_Tax_amount" class="java.lang.Double"/>
+	<field name="bill_master_Paid_amount" class="java.lang.Double"/>
+	<field name="bill_master_Due_amount" class="java.lang.Double"/>
+	<field name="bill_master_filename" class="java.lang.String"/>
+	<field name="bill_master_Promotion_description" class="java.lang.String"/>
+	<field name="bill_master_Bill_Period" class="java.lang.String"/>
+	<field name="bill_master_adjustments_payments" class="java.lang.Double"/>
+	<field name="additional_student_personal_data_client_id" class="java.lang.Integer"/>
+	<field name="additional_student_personal_data_flat_no" class="java.lang.String"/>
+	<field name="additional_student_personal_data_building_no" class="java.lang.String"/>
+	<field name="additional_student_personal_data_street" class="java.lang.String"/>
+	<field name="additional_student_personal_data_county" class="java.lang.String"/>
+	<field name="additional_student_personal_data_state" class="java.lang.String"/>
+	<field name="additional_student_personal_data_country" class="java.lang.String"/>
+	<field name="additional_student_personal_data_zip_code" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="42" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="572" height="42"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="220" y="0" width="186" height="42"/>
+				<textElement>
+					<font fontName="Times New Roman" size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Bill Invoice]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="167" splitType="Stretch">
+			<rectangle>
+				<reportElement mode="Transparent" x="0" y="0" width="294" height="167" forecolor="#666666"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineColor="#000000"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement positionType="Float" x="294" y="0" width="278" height="167"/>
+				<graphicElement>
+					<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="1" y="1" width="54" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="72" y="1" width="3" height="20"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="28" width="54" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Address]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="72" y="28" width="7" height="20"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="138" width="55" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Branch]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="69" y="138" width="3" height="20"/>
+				<textElement/>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="18" width="151" height="20" forecolor="#FF0033"/>
+				<box>
+					<pen lineColor="#00FFFF"/>
+					<topPen lineColor="#00FFFF"/>
+					<leftPen lineColor="#00FFFF"/>
+					<bottomPen lineColor="#00FFFF"/>
+					<rightPen lineColor="#00FFFF"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Times New Roman" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Hugo Technologies]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="38" width="151" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[# 501, Sai Balaji Cubicles,]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="58" width="151" height="20"/>
+				<textElement textAlignment="Left">
+					<font fontName="Times New Roman" size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Raghavendra Society, Kondapur,]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="78" width="151" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+				</textElement>
+				<text><![CDATA[Hyderabad - 500 084, AP, India.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="98" width="151" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tel: +91-40-65141823]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="380" y="118" width="151" height="20"/>
+				<textElement>
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[www.hugotechnologies.com]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="180">
+			<rectangle>
+				<reportElement x="453" y="97" width="119" height="39"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="334" y="97" width="119" height="39"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="222" y="97" width="112" height="39"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="103" y="97" width="119" height="39"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</rectangle>
+			<rectangle>
+				<reportElement x="0" y="97" width="103" height="39"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="45" y="147" width="158" height="26"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Current Bill Details]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="97" width="100" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Previous Balance]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="114" y="97" width="92" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Adjustment Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="230" y="97" width="92" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Payments]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="335" y="97" width="87" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Charge Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="453" y="97" width="119" height="20"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Due Amount]]></text>
+			</staticText>
+			<rectangle>
+				<reportElement x="0" y="0" width="294" height="97"/>
+			</rectangle>
+			<rectangle>
+				<reportElement x="294" y="0" width="278" height="97"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="6" y="18" width="63" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Client Id   :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="304" y="0" width="72" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[BillNo     :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="304" y="20" width="72" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Bill Date   :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="312" y="40" width="64" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Bill Period  :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="312" y="61" width="64" height="20"/>
+				<textElement textAlignment="Right">
+					<font fontName="Times New Roman" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Due Date  :]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="364" y="147" width="156" height="26"/>
+				<textElement textAlignment="Center">
+					<font fontName="Times New Roman" size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Promotional Message]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="380" y="0" width="100" height="18"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Bill_No}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="380" y="20" width="100" height="18"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Bill_date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="79" y="20" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Client_id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="380" y="60" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Due_date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="380" y="38" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Bill_Period}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="6" y="116" width="94" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Previous_balance}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="230" y="117" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Paid_amount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="335" y="117" width="100" height="19"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Charges_amount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="453" y="116" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Due_amount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="106" y="116" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Adjustment_amount}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="205" splitType="Immediate">
+			<rectangle>
+				<reportElement x="16" y="0" width="296" height="205"/>
+			</rectangle>
+			<rectangle>
+				<reportElement x="345" y="0" width="227" height="205"/>
+			</rectangle>
+			<textField>
+				<reportElement x="406" y="52" width="100" height="20"/>
+				<textElement/>
+				<textFieldExpression><![CDATA[$F{bill_master_Promotion_description}]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="16" y="0" width="296" height="100"/>
+				<subreportParameter name="param1">
+					<subreportParameterExpression><![CDATA[$P{param1}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{SUBREPORT_DIR} + "report21_subreport3.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="94" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>

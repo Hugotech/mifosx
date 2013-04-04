@@ -35,12 +35,12 @@ private Long id;
 	private Long serviceStatus;
 
 	@Column(name = "is_deleted")
-	private boolean isDeleted;
+	private char isDeleted;
 
 	public OrderLine()
 	{}
 
-	public OrderLine(final Long service_id,final String service_type,final Long service_status,final boolean isdeleted )
+	public OrderLine(final Long service_id,final String service_type,final Long service_status,final char isdeleted )
 	{
 		this.orders=null;
 		this.serviceId=service_id;
@@ -74,7 +74,7 @@ public OrderLine(final String service_code)
 	}
 
 
-	public boolean isIs_deleted() {
+	public char isIs_deleted() {
 		return isDeleted;
 	}
 	public  void update(Order order2)
@@ -85,7 +85,7 @@ public OrderLine(final String service_code)
 
 	public void delete() {
 
-		this.isDeleted=true;
+		this.isDeleted='y';
 
 
 	}

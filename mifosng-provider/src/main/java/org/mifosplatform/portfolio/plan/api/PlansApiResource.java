@@ -92,7 +92,6 @@ public class PlansApiResource {
 			@QueryParam("plan_code") final String planCode,
 			@Context final UriInfo uriInfo) {
 
-		// context.authenticatedUser().validateHasReadPermission("CLIENT");
 
 		final Set<String> responseParameters = ApiParameterHelper
 				.extractFieldsForResponseIfProvided(uriInfo

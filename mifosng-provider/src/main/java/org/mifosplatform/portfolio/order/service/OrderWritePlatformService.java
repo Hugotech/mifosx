@@ -11,7 +11,7 @@ public interface OrderWritePlatformService {
 
 	CommandProcessingResult createOrder(final OrdersCommand command);
 
-	void deleteOrder(Long orderId, List<OrderData> orederData, OrderPriceData orderPrice);
+	CommandProcessingResult deleteOrder(Long orderId, List<OrderData> orederData, List<OrderPriceData> orderPrice);
 
 	CommandProcessingResult updateOrder(Long orderId);
 

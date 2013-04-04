@@ -34,6 +34,8 @@ import org.mifosplatform.infrastructure.core.serialization.ToApiJsonSerializer;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
 import org.mifosplatform.organisation.office.data.OfficeLookup;
 import org.mifosplatform.organisation.office.service.OfficeReadPlatformService;
+import org.mifosplatform.portfolio.address.data.AddressData;
+import org.mifosplatform.portfolio.address.service.AddressReadPlatformService;
 import org.mifosplatform.portfolio.client.command.ClientCommand;
 import org.mifosplatform.portfolio.client.data.ClientAccountSummaryCollectionData;
 import org.mifosplatform.portfolio.client.data.ClientData;
@@ -50,7 +52,7 @@ public class ClientsApiResource {
 
     private final Set<String> CLIENT_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("id", "accountNo", "officeId", "officeName",
             "externalId", "firstname", "middlename", "lastname", "fullname", "joinedDate", "displayName", "clientOrBusinessName",
-            "allowedOffices", "imagePresent"));
+            "allowedOffices", "imagePresent","addrId","addrNo","street","city","state","country","zip","flag"));
 
     private final PlatformSecurityContext context;
     private final ClientReadPlatformService clientReadPlatformService;
@@ -61,6 +63,7 @@ public class ClientsApiResource {
     private final PortfolioCommandsReadPlatformService commandSourceReadPlatformService;
     private final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService;
     private final ClientCommandFromApiJsonDeserializer clientCommandFromApiJsonDeserializer;
+	private final AddressReadPlatformService addressReadPlatformService;
 
     @Autowired
     public ClientsApiResource(final PlatformSecurityContext context, final ClientReadPlatformService readPlatformService,
@@ -69,7 +72,8 @@ public class ClientsApiResource {
             final ToApiJsonSerializer<ClientAccountSummaryCollectionData> clientAccountSummaryToApiJsonSerializer,
             final ApiRequestParameterHelper apiRequestParameterHelper,
             final PortfolioCommandsReadPlatformService commandsReadPlatformService,
-            final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService) {
+            final PortfolioCommandSourceWritePlatformService commandsSourceWritePlatformService,
+            final AddressReadPlatformService addressReadPlatformService) {
         this.context = context;
         this.clientReadPlatformService = readPlatformService;
         this.officeReadPlatformService = officeReadPlatformService;
@@ -79,6 +83,7 @@ public class ClientsApiResource {
         this.apiRequestParameterHelper = apiRequestParameterHelper;
         this.commandSourceReadPlatformService = commandsReadPlatformService;
         this.commandsSourceWritePlatformService = commandsSourceWritePlatformService;
+        this.addressReadPlatformService=addressReadPlatformService;
     }
 
     @GET
@@ -155,11 +160,12 @@ public class ClientsApiResource {
         final ApiRequestJsonSerializationSettings settings = apiRequestParameterHelper.process(uriInfo.getQueryParameters());
 
         ClientData clientData = this.clientReadPlatformService.retrieveIndividualClient(clientId);
+       
         if (settings.isTemplate()) {
             // FIXME - KW - no need for special OfficeLookup object, just use
             // OfficeData and only populate with id, name, nameDecorated
             final List<OfficeLookup> allowedOffices = new ArrayList<OfficeLookup>(officeReadPlatformService.retrieveAllOfficesForLookup());
-            clientData = ClientData.templateOnTop(clientData, allowedOffices);
+           
         }
         if (settings.isCommandIdPassed()) {
             clientData = handleRequestToIntegrateProposedChangesFromCommand(clientId, settings.getCommandId(), clientData);
@@ -169,7 +175,7 @@ public class ClientsApiResource {
         // into the retrieve client method
         final Collection<ClientData> dataChanges = retrieveAllUnprocessedDataChanges(clientId);
         clientData = ClientData.integrateChanges(clientData, clientData.currentChange(), dataChanges);
-
+         
         return this.toApiJsonSerializer.serialize(settings, clientData, CLIENT_DATA_PARAMETERS);
     }
 
@@ -179,7 +185,7 @@ public class ClientsApiResource {
 
         final ClientCommand command = this.clientCommandFromApiJsonDeserializer.commandFromApiJson(entry.json());
         final ClientData currentChange = ClientData.dataChangeInstance(clientId, command.getOfficeId(), command.getExternalId(),
-                command.getFirstname(), command.getMiddlename(), command.getLastname(), command.getFullname(), command.getJoiningDate());
+                command.getFirstname(), command.getMiddlename(), command.getLastname(), command.getFullname(), command.getJoiningDate(), commandId, null, null, null, null, null, null,false);
 
         final Collection<ClientData> dataChanges = null; // retrieveAllUnprocessedDataChanges(clientId);
         return ClientData.integrateChanges(clientData, currentChange, dataChanges);
@@ -194,7 +200,7 @@ public class ClientsApiResource {
             final ClientCommand command = this.clientCommandFromApiJsonDeserializer.commandFromApiJson(commandSourceData.json());
             final ClientData change = ClientData
                     .dataChangeInstance(clientId, command.getOfficeId(), command.getExternalId(), command.getFirstname(),
-                            command.getMiddlename(), command.getLastname(), command.getFullname(), command.getJoiningDate());
+                            command.getMiddlename(), command.getLastname(), command.getFullname(), command.getJoiningDate(), clientId, null, null, null, null, null, null,false);
             dataChanges.add(change);
         }
 

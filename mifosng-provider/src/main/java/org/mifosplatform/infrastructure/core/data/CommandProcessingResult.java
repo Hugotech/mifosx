@@ -54,7 +54,7 @@ public class CommandProcessingResult {
     public CommandProcessingResult(final Long entityId) {
         this.resourceId = entityId;
         this.officeId = null;
-        this.groupId = null;
+        this.groupId = entityId;
         this.clientId = null;
         this.loanId = null;
         this.changes = new HashMap<String, Object>();

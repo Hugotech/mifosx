@@ -68,11 +68,11 @@ public class GenerateBill {
 		return chargeType;
 	}
 
-	public BillingOrderCommand getProrataMonthlyFirstBill( // pro rataa
+	// pro rata monthly bill
+	public BillingOrderCommand getProrataMonthlyFirstBill( 
 			BillingOrderData billingOrderData) {
 
 		startDate = new LocalDate(billingOrderData.getBillStartDate());
-		
 
 		endDate = startDate.dayOfMonth().withMaximumValue();
 
@@ -82,11 +82,16 @@ public class GenerateBill {
 					.getDayOfMonth();
 			int totalDays = endOfMonth - currentDay + 1;
 			//price = billingOrderData.getPrice();
-			pricePerMonth = billingOrderData.getPrice();
-			BigDecimal pricePerDay = pricePerMonth.divide(new BigDecimal(30), 2,
+			price = billingOrderData.getPrice();
+			BigDecimal pricePerDay = price.divide(new BigDecimal(30), 2,
 					RoundingMode.HALF_UP);
 			
-			price = pricePerDay.multiply(new BigDecimal(totalDays));
+			
+			if(totalDays < endOfMonth){
+				price = pricePerDay.multiply(new BigDecimal(totalDays));
+			}
+				
+			
 
 			
 		} else if (endDate.toDate().after(billingOrderData.getBillEndDate())) {
@@ -94,7 +99,7 @@ public class GenerateBill {
 			price = getDisconnectionCredit(startDate, endDate,
 					billingOrderData.getPrice(),
 					billingOrderData.getDurationType());
-		}
+		} 
 
 		
 		invoiceTillDate = endDate;
@@ -264,19 +269,28 @@ public class GenerateBill {
 
 		int totalDays = 0;
 
-		int diff = Math.abs(endDateOfWeek - startDateOfWeek);
-		int numberOfdaysOfMonth = startDate.dayOfMonth().withMaximumValue()
-				.getDayOfMonth();
-		if (diff >= 7) {
-			totalDays = numberOfdaysOfMonth - diff + 1;
-		} else {
-			totalDays = endDateOfWeek - startDateOfWeek + 1;
-		}
+		// int diff = Math.abs(endDateOfWeek - startDateOfWeek);
+		totalDays = Days.daysBetween(startDate, endDate).getDays()+1;
+//		int numberOfdaysOfMonth = startDate.dayOfMonth().withMaximumValue()
+//				.getDayOfMonth();
+//		if (diff >= 7) {
+//			totalDays = numberOfdaysOfMonth - diff + 1;
+//			
+//		} else {
+//			totalDays = endDateOfWeek - startDateOfWeek + 1;
+//		}
+		
 
 		BigDecimal pricePerDay = billingOrderData.getPrice().divide(
 				new BigDecimal(7), 2, RoundingMode.HALF_UP);
+		
+		if(totalDays < 7){
+			price = pricePerDay.multiply(new BigDecimal(totalDays));
+		}else if(totalDays ==7){
+			price = billingOrderData.getPrice();
+		}
 
-		price = pricePerDay.multiply(new BigDecimal(totalDays));
+		
 
 		invoiceTillDate = endDate;
 		nextbillDate = endDate.plusDays(1);

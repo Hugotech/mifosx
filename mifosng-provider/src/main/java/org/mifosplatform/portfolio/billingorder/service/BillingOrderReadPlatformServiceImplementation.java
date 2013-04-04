@@ -7,11 +7,14 @@ import java.util.Date;
 import java.util.List;
 
 import org.joda.time.LocalDate;
+import org.mifosplatform.infrastructure.core.domain.JdbcSupport;
 import org.mifosplatform.infrastructure.core.service.TenantAwareRoutingDataSource;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
 import org.mifosplatform.portfolio.billingorder.data.BillingOrderData;
+import org.mifosplatform.portfolio.billingorder.data.GenerateInvoiceData;
 import org.mifosplatform.portfolio.order.data.OrderPriceData;
 import org.mifosplatform.portfolio.taxmaster.data.TaxMappingRateData;
+import org.mifosplatform.useradministration.domain.AppUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -171,25 +174,27 @@ public class BillingOrderReadPlatformServiceImplementation implements
 	}
 
 	@Override
-	public List<Long> retrieveOrderIds(Long clientId,LocalDate processDate) {
-		PlanIdMapper planIdMapper = new PlanIdMapper();
+	public List<BillingOrderData> retrieveOrderIds(Long clientId,LocalDate processDate) {
+		OrderIdMapper planIdMapper = new OrderIdMapper();
 		String sql = "select" + planIdMapper.planIdSchema();
 		return this.jdbcTemplate.query(sql, planIdMapper,new Object[] { clientId,processDate.minusDays(1).toDate(),processDate.toDate() });
 		
 	}
 	
 	
-	private static final class PlanIdMapper implements RowMapper<Long> {
+	private static final class OrderIdMapper implements RowMapper<BillingOrderData> {
 
 		@Override
-		public Long mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-			Long planId = resultSet.getLong("orderId");
-			return planId;
+		public BillingOrderData  mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+			Long orderId = resultSet.getLong("orderId");
+			String durationType = resultSet.getString("durationType");
+			Date billStartDate = resultSet.getDate("billStartDate");
+			return new BillingOrderData(orderId, durationType, billStartDate);
 		}
 		
 
 		public String planIdSchema() {
-			return " os.id as orderId  FROM orders os"+
+			return " distinct os.id as orderId,op.duration_type as durationType,Date_format(IFNULL(op.invoice_tilldate,op.bill_start_date), '%Y-%m-%d') as billStartDate FROM orders os"+
 					" left outer join order_price op on os.id = op.order_id"+
 					" WHERE os.client_id = ? AND Date_format(IFNULL(os.next_billable_day, ?), '%Y-%m-%d') < ?"+
 					" and Date_format(IFNULL(os.next_billable_day,Date_format(IFNULL(op.bill_end_date, '3099-12-12'),'%Y-%m-%d')), '%Y-%m-%d')" +
@@ -197,5 +202,28 @@ public class BillingOrderReadPlatformServiceImplementation implements
 		}
 		
 		
+	}
+	
+private static final class OrderMapper implements RowMapper<GenerateInvoiceData> {
+		
+		public String schema() {
+			return " o.client_id as clientId, o.next_billable_day as nextBillableDay from orders o join m_client c on c.id=o.client_id and o.next_billable_day is null";
+		}
+
+		@Override
+		public GenerateInvoiceData mapRow(ResultSet rs, int rowNum) throws SQLException {
+			Long clientId = rs.getLong("clientId");
+			LocalDate nextBillableDay = JdbcSupport.getLocalDate(rs, "nextBillableDay");
+			return new GenerateInvoiceData(clientId, nextBillableDay); 
+		}
+		
+	}
+	
+	@Override
+	public List<GenerateInvoiceData> retrieveClientsWithOrders() {
+		AppUser user = this.context.authenticatedUser();
+		OrderMapper mapper = new OrderMapper();
+		String schema = "Select " + mapper.schema() + " and o.createdby_id = ? ";
+		return this.jdbcTemplate.query(schema, mapper, new Object[]{user.getId()});
 	}
 }

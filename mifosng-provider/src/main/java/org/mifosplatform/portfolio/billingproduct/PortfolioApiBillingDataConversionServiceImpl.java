@@ -21,12 +21,15 @@ import org.mifosplatform.infrastructure.core.data.ApiParameterError;
 import org.mifosplatform.infrastructure.core.exception.InvalidJsonException;
 import org.mifosplatform.infrastructure.core.exception.PlatformApiDataValidationException;
 import org.mifosplatform.infrastructure.core.exception.UnsupportedParameterException;
+import org.mifosplatform.portfolio.address.command.AddressCommand;
 import org.mifosplatform.portfolio.adjustment.commands.AdjustmentCommand;
 import org.mifosplatform.portfolio.billingcycle.command.BillingCycleCommand;
 import org.mifosplatform.portfolio.billingmaster.command.BillMasterCommand;
 import org.mifosplatform.portfolio.charge.commands.ChargeCodeCommand;
 import org.mifosplatform.portfolio.client.serialization.ClientCommandFromApiJsonDeserializer;
 import org.mifosplatform.portfolio.discountmaster.commands.DiscountMasterCommand;
+import org.mifosplatform.portfolio.item.command.ItemCommand;
+import org.mifosplatform.portfolio.onetimesale.command.OneTimeSaleCommand;
 import org.mifosplatform.portfolio.order.command.OrdersCommand;
 import org.mifosplatform.portfolio.payment.command.Paymentcommand;
 import org.mifosplatform.portfolio.paymodes.commands.PaymodeCommand;
@@ -1107,4 +1110,83 @@ Set<String> modifiedParameters = new HashSet<String>();
 	        return new TicketMasterCommand(clientId,priority, description, problemCode, status,
 	        		resolutionDescription, assignedTo,ticketDate);
 	}
-}
+
+	@Override
+	public AddressCommand convertJsonToAddressCommand(Object object,
+			Long clientId, String jsonRequestBody) {
+		 if (StringUtils.isBlank(jsonRequestBody)) { throw new InvalidJsonException(); }
+
+	        Type typeOfMap = new TypeToken<Map<String, String>>() {}.getType();
+	        Map<String, String> requestMap = gsonConverter.fromJson(jsonRequestBody, typeOfMap);
+
+	        // preClosureInterestRate
+	        Set<String> supportedParams = new HashSet<String>(Arrays.asList("clientId","addressKey","addressNo","street","zip","city",
+	    	"state","country"));
+	        checkForUnsupportedParameters(requestMap, supportedParams);
+	        Set<String> modifiedParameters = new HashSet<String>();
+
+	        Long clientid = extractLongParameter("clientId", requestMap, modifiedParameters);
+	        String addressKey = extractStringParameter("addressKey", requestMap, modifiedParameters);
+	        String addressNo = extractStringParameter("addressNo", requestMap, modifiedParameters);
+	        String street = extractStringParameter("street", requestMap, modifiedParameters);
+	        String zip = extractStringParameter("zip", requestMap, modifiedParameters);
+	        String city = extractStringParameter("city", requestMap, modifiedParameters);
+	        String state = extractStringParameter("state", requestMap, modifiedParameters);
+	        String country = extractStringParameter("country", requestMap, modifiedParameters);
+
+
+	        return new AddressCommand(modifiedParameters,clientId,addressKey, addressNo, street, zip,
+	        		city, state,country);
+	}
+
+	@Override
+	public OneTimeSaleCommand convertJsonToSalesCommand(Object object,
+			String jsonRequestBody) {
+		 if (StringUtils.isBlank(jsonRequestBody)) { throw new InvalidJsonException(); }
+
+	        Type typeOfMap = new TypeToken<Map<String, String>>() {}.getType();
+	        Map<String, String> requestMap = gsonConverter.fromJson(jsonRequestBody, typeOfMap);
+
+	        // preClosureInterestRate
+	        Set<String> supportedParams = new HashSet<String>(Arrays.asList("itemId","locale","units","chargeCode","unitPrice","quantity","totalPrice"));
+	        checkForUnsupportedParameters(requestMap, supportedParams);
+	        Set<String> modifiedParameters = new HashSet<String>();
+
+	        Long itemId = extractLongParameter("itemId", requestMap, modifiedParameters);
+	        String units = extractStringParameter("units", requestMap, modifiedParameters);
+	        String chargeCode = extractStringParameter("chargeCode", requestMap, modifiedParameters);
+	        BigDecimal unitPrice = extractBigDecimalParameter("unitPrice", requestMap, modifiedParameters);
+	        String quantity = extractStringParameter("quantity", requestMap, modifiedParameters);
+	        BigDecimal totalPrice = extractBigDecimalParameter("totalPrice", requestMap, modifiedParameters);
+	      
+
+
+	        return new OneTimeSaleCommand(modifiedParameters,itemId,units, chargeCode, unitPrice, quantity,
+	        		totalPrice);
+	}
+
+	@Override
+	public ItemCommand convertJsonToItemCommand(Object object,
+			String jsonRequestBody) {
+		 if (StringUtils.isBlank(jsonRequestBody)) { throw new InvalidJsonException(); }
+
+	        Type typeOfMap = new TypeToken<Map<String, String>>() {}.getType();
+	        Map<String, String> requestMap = gsonConverter.fromJson(jsonRequestBody, typeOfMap);
+
+	        // preClosureInterestRate
+	        Set<String> supportedParams = new HashSet<String>(Arrays.asList("itemCode","itemDescription","units","chargeCode","locale","unitPrice","warranty","itemClass"));
+	        checkForUnsupportedParameters(requestMap, supportedParams);
+	        Set<String> modifiedParameters = new HashSet<String>();
+
+	        String itemCode = extractStringParameter("itemCode", requestMap, modifiedParameters);
+	        String itemDescription = extractStringParameter("itemDescription", requestMap, modifiedParameters);
+	        String units = extractStringParameter("units", requestMap, modifiedParameters);
+	        String itemClass = extractStringParameter("itemClass", requestMap, modifiedParameters);
+	        String chargeCode = extractStringParameter("chargeCode", requestMap, modifiedParameters);
+	        BigDecimal unitPrice = extractBigDecimalParameter("unitPrice", requestMap, modifiedParameters);
+	        Long warranty = extractLongParameter("warranty", requestMap, modifiedParameters);
+
+	        return new ItemCommand(modifiedParameters,itemCode,itemDescription,itemClass, chargeCode, unitPrice, warranty,units);
+	}
+	}
+

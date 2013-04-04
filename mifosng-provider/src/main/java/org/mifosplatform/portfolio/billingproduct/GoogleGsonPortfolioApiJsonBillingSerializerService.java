@@ -1,5 +1,6 @@
 package org.mifosplatform.portfolio.billingproduct;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -7,14 +8,16 @@ import java.util.List;
 import java.util.Set;
 
 import org.mifosplatform.infrastructure.core.serialization.GoogleGsonSerializerHelper;
+import org.mifosplatform.portfolio.address.data.AddressData;
 import org.mifosplatform.portfolio.adjustment.data.AdjustmentCodeData;
 import org.mifosplatform.portfolio.billingcycle.data.BillingCycleData;
 import org.mifosplatform.portfolio.discountmaster.commands.Discount;
 import org.mifosplatform.portfolio.discountmaster.data.DiscountMasterData;
 import org.mifosplatform.portfolio.financialtransaction.data.FinancialTransactionsData;
 import org.mifosplatform.portfolio.loanaccount.data.LoanBasicDetailsData;
+import org.mifosplatform.portfolio.onetimesale.data.ItemData;
+import org.mifosplatform.portfolio.onetimesale.data.OneTimeSaleData;
 import org.mifosplatform.portfolio.order.data.OrderData;
-import org.mifosplatform.portfolio.order.data.OrderPriceData;
 import org.mifosplatform.portfolio.paymodes.data.PaymodeData;
 import org.mifosplatform.portfolio.plan.data.PlanData;
 import org.mifosplatform.portfolio.plan.data.ServiceData;
@@ -23,6 +26,7 @@ import org.mifosplatform.portfolio.servicemaster.data.SericeMasterOptionsData;
 import org.mifosplatform.portfolio.subscription.data.SubscriptionData;
 import org.mifosplatform.portfolio.taxmaster.data.TaxMappingRateOptionsData;
 import org.mifosplatform.portfolio.taxmaster.data.TaxMasterDataOptions;
+import org.mifosplatform.portfolio.ticketmaster.data.ClientTicketData;
 import org.mifosplatform.portfolio.ticketmaster.data.TicketMasterData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,16 +42,24 @@ public class GoogleGsonPortfolioApiJsonBillingSerializerService implements Portf
 
 	    private static final Set<String> SERVICE_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("id","serviceCode","serviceDescription","serviceType","serviceData"));
 
-	    private static final Set<String> ORDER_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("id","cancelledStatus","status","contractperiod",
-	            "plan_code","units","service_code","allowedtypes","data","servicedata","billing_frequency", "start_date", "contract_period","startDate"));
+	    private static final Set<String> ORDER_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("id","cancelledStatus","status","contractPeriod","nextBillDate","flag",
+	           "currentDate","plan_code","units","service_code","allowedtypes","data","servicedata","billing_frequency", "start_date", "contract_period","startDate","invoiceTillDate"));
 
 	    private static final Set<String> BILLINGCYCLE_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("id",
 	            "billing_code","description","frequency","every","day_name","day_num","allowedtypes"));
 
 	    private static final Set<String> PAYMODE_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("data","id",
 	            "paymodeCode","paymodeDescription"));
+	    
+	    private static final Set<String> ADDRESS_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("addressid","clientId",
+	            "addressNo","street","zipCode","city","state","country","datas","countryData","stateData","cityData"));
 
-
+	    private static final Set<String> ONETIMESALE_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("itemId","chargedatas","itemDatas",
+	            "units","unitPrice","saleDate","totalprice","quantity"));
+	    
+	    private static final Set<String> ITEM_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("itemId","chargedatas","unitData",
+	            "itemclassData","chargeCode","unit","warranty","itemDescription","itemCode","unitPrice"));
+	    
 
 
 	    private static final Set<String> PAYMENT_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("id","paymentTypes"));
@@ -73,7 +85,7 @@ public class GoogleGsonPortfolioApiJsonBillingSerializerService implements Portf
 	private static final Set<String> TAX_MAPPING_RATE_DATA_PARAMETERS_TEMPLETE=new HashSet<String>(Arrays.asList("id","taxCode","taxMasterOptions"));
 	
 	private static final Set<String> TICKET_MASTER_DATA_PARAMETERS_TEMPLETE=new HashSet<String>(Arrays.asList("id","priority","statusType","priorityType",
-			"status","assignedTo","ticketDate","problemsDatas","usersData","userName","lastComment"));
+			"status","assignedTo","ticketDate","problemsDatas","usersData","userName","lastComment","masterData"));
 	    private final GoogleGsonSerializerHelper helper;
 
 	    @Autowired
@@ -252,11 +264,11 @@ public class GoogleGsonPortfolioApiJsonBillingSerializerService implements Portf
 	@Override
 	public String serializeTransactionalDataToJson(boolean prettyPrint,
 	Set<String> responseParameters,
-	List<FinancialTransactionsData> transactionData) {
+	FinancialTransactionsData data) {
 	final Gson gsonDeserializer = helper
 	.createGsonBuilderWithParameterExclusionSerializationStrategy(
 	TRANSACTIONAL_DATA_PARAMETERS_TEMPLETE, prettyPrint, responseParameters);
-	return helper.serializedJsonFrom(gsonDeserializer, transactionData);
+	return helper.serializedJsonFrom(gsonDeserializer, data);
 	}
 
 
@@ -352,6 +364,99 @@ public class GoogleGsonPortfolioApiJsonBillingSerializerService implements Portf
         return helper.serializedJsonFrom(gsonDeserializer, data);
     
 	}
+
+
+
+	@Override
+	public String serializeTransactionalDataToJson(boolean prettyPrint,
+			Set<String> responseParameters,
+			List<FinancialTransactionsData> transactionData) {
+		
+			  final Gson gsonDeserializer = helper.createGsonBuilderWithParameterExclusionSerializationStrategy(TRANSACTIONAL_DATA_PARAMETERS_TEMPLETE,
+		                prettyPrint, responseParameters);
+		        return helper.serializedJsonFrom(gsonDeserializer, transactionData.toArray());
+	}
+
+
+
+	@Override
+	public String serializeClientTicketDataToJson(boolean prettyPrint,
+			Set<String> responseParameters, List<ClientTicketData> data) {
+		 final Gson gsonDeserializer = helper.createGsonBuilderWithParameterExclusionSerializationStrategy(TICKET_MASTER_DATA_PARAMETERS_TEMPLETE,
+	                prettyPrint, responseParameters);
+	        return helper.serializedJsonFrom(gsonDeserializer, data.toArray());
+	}
+
+
+
+	@Override
+	public String serializeDepositAddressDataToJson(boolean prettyPrint,
+			Set<String> responseParameters, List<AddressData> addressdata) {
+		 final Gson gsonDeserializer = helper.createGsonBuilderWithParameterExclusionSerializationStrategy(ADDRESS_DATA_PARAMETERS,
+	                prettyPrint, responseParameters);
+	        return helper.serializedJsonFrom(gsonDeserializer, addressdata.toArray());
+	}
+
+
+
+	@Override
+	public String serializeDepositAddressDataToJson(boolean prettyPrint,
+			Set<String> responseParameters, AddressData addressdata) {
+		 final Gson gsonDeserializer = helper.createGsonBuilderWithParameterExclusionSerializationStrategy(ADDRESS_DATA_PARAMETERS,
+	                prettyPrint, responseParameters);
+	        return helper.serializedJsonFrom(gsonDeserializer, addressdata);
+	}
+
+
+
+	@Override
+	public String serializeOneTimeSaleDataToJson(boolean prettyPrint,
+			Set<String> responseParameters, OneTimeSaleData data) {
+		 final Gson gsonDeserializer = helper.createGsonBuilderWithParameterExclusionSerializationStrategy(ONETIMESALE_DATA_PARAMETERS,
+	                prettyPrint, responseParameters);
+	        return helper.serializedJsonFrom(gsonDeserializer, data);
+	}
+
+
+
+	@Override
+	public String serializeOneTimeSaleDataToJson(boolean prettyPrint,
+			Set<String> responseParameters, List<OneTimeSaleData> salesData) {
+		 final Gson gsonDeserializer = helper.createGsonBuilderWithParameterExclusionSerializationStrategy(ONETIMESALE_DATA_PARAMETERS,
+	                prettyPrint, responseParameters);
+	        return helper.serializedJsonFrom(gsonDeserializer, salesData.toArray());
+	}
+
+
+
+	@Override
+	public String serializeItemDataToJson(boolean prettyPrint,
+			Set<String> responseParameters, ItemData itemData) {
+			 final Gson gsonDeserializer = helper.createGsonBuilderWithParameterExclusionSerializationStrategy(ITEM_DATA_PARAMETERS,
+		                prettyPrint, responseParameters);
+		        return helper.serializedJsonFrom(gsonDeserializer,itemData);
+	}
+
+
+
+	@Override
+	public String serializeItemDataToJson(boolean prettyPrint,
+			Set<String> responseParameters, List<ItemData> itemData) {
+		 final Gson gsonDeserializer = helper.createGsonBuilderWithParameterExclusionSerializationStrategy(ITEM_DATA_PARAMETERS,
+	                prettyPrint, responseParameters);
+	        return helper.serializedJsonFrom(gsonDeserializer, itemData.toArray());
+	}
+
+
+
+	
+
+
+
+
+
+
+	
 
 
 

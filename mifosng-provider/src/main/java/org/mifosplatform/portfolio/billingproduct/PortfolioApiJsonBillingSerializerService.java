@@ -1,15 +1,19 @@
 package org.mifosplatform.portfolio.billingproduct;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.mifosplatform.portfolio.address.data.AddressData;
 import org.mifosplatform.portfolio.adjustment.data.AdjustmentCodeData;
 import org.mifosplatform.portfolio.billingcycle.data.BillingCycleData;
 import org.mifosplatform.portfolio.discountmaster.commands.Discount;
 import org.mifosplatform.portfolio.discountmaster.data.DiscountMasterData;
 import org.mifosplatform.portfolio.financialtransaction.data.FinancialTransactionsData;
 import org.mifosplatform.portfolio.loanaccount.data.LoanBasicDetailsData;
+import org.mifosplatform.portfolio.onetimesale.data.ItemData;
+import org.mifosplatform.portfolio.onetimesale.data.OneTimeSaleData;
 import org.mifosplatform.portfolio.order.data.OrderData;
 import org.mifosplatform.portfolio.order.data.OrderPriceData;
 import org.mifosplatform.portfolio.paymodes.data.PaymodeData;
@@ -20,6 +24,7 @@ import org.mifosplatform.portfolio.servicemaster.data.SericeMasterOptionsData;
 import org.mifosplatform.portfolio.subscription.data.SubscriptionData;
 import org.mifosplatform.portfolio.taxmaster.data.TaxMappingRateOptionsData;
 import org.mifosplatform.portfolio.taxmaster.data.TaxMasterDataOptions;
+import org.mifosplatform.portfolio.ticketmaster.data.ClientTicketData;
 import org.mifosplatform.portfolio.ticketmaster.data.TicketMasterData;
 
 public interface PortfolioApiJsonBillingSerializerService {
@@ -68,7 +73,7 @@ String serializeDiscountMasterDataToJsonTemplete(boolean prettyPrint,Set<String>
 String serializeOrderToJson(boolean prettyPrint,
 Set<String> responseParameters, List<OrderData> data);
 
-String serializeTransactionalDataToJson(boolean prettyPrint,Set<String> responseParameters,	List<FinancialTransactionsData> transactionData);
+String serializeTransactionalDataToJson(boolean prettyPrint,Set<String> responseParameters,	FinancialTransactionsData data);
 
 String serializePricingDataToJson(boolean prettyPrint,Set<String> responseParameters, PricingData clientAccount);
 
@@ -91,6 +96,23 @@ String serializePaymodeToJson(boolean prettyPrint,
 String serializeServiceMasterDataToJson(boolean prettyPrint,	Set<String> responseParameters, SericeMasterOptionsData productData);
 
 String serializeClientOrderPriceDataToJson(boolean prettyPrint,	Set<String> responseParameters, Long clientId, OrderData orderData);
+
+String serializeTransactionalDataToJson(boolean prettyPrint,Set<String> responseParameters,List<FinancialTransactionsData> transactionData);
+
+String serializeClientTicketDataToJson(boolean prettyPrint,	Set<String> responseParameters, List<ClientTicketData> data);
+
+String serializeDepositAddressDataToJson(boolean prettyPrint,Set<String> responseParameters, List<AddressData> addressdata);
+
+String serializeDepositAddressDataToJson(boolean prettyPrint,Set<String> responseParameters, AddressData addressdata);
+
+String serializeOneTimeSaleDataToJson(boolean prettyPrint,Set<String> responseParameters, OneTimeSaleData data);
+
+String serializeOneTimeSaleDataToJson(boolean prettyPrint,Set<String> responseParameters, List<OneTimeSaleData> salesData);
+
+String serializeItemDataToJson(boolean prettyPrint,	Set<String> responseParameters, ItemData itemData);
+
+String serializeItemDataToJson(boolean prettyPrint,
+		Set<String> responseParameters, List<ItemData> itemData);
 
 
 

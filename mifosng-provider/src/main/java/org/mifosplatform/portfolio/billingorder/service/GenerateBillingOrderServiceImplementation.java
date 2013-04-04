@@ -37,32 +37,6 @@ public class GenerateBillingOrderServiceImplementation implements
 		BillingOrderCommand billingOrderCommand = null;
 		List<BillingOrderCommand> billingOrderCommands = new ArrayList<BillingOrderCommand>();
 
-		// First loop -- insert a record in invoice_charge
-		// For each Record we have to first identify the charge type based
-		// on
-		// charge type if NRC it is Only One time Bill
-		// Charge type = RC we have to do the calculation based on the
-		// duration
-		// and duration type * price
-		// Phase II implementation of Discounts
-		// Phase III implementation of UC will come into picture
-		// Second loop -- insert a record in invoice_tax
-		// For each Record seek the mapping of Tax to the charge code if
-		// exists
-		// then we need to do the calculation and post a record in
-		// invoice_tax
-		// if not available the exit
-		// Phase II implementation will be for if the charge code has
-		// multiple
-		// tax mappings
-		// Phase III implementation will be for tax on tax
-		// Phase IV implementation will be on Round off Values
-		// Final Round up -- insert a record in invoice base on the client
-		// id --
-		// Each client may have one or many billing records
-
-		// 1st loop on the records
-
 		if (products.size() != 0) {
 
 			for (BillingOrderData billingOrderData : products) {
@@ -73,7 +47,7 @@ public class GenerateBillingOrderServiceImplementation implements
 				}
 				
 				else if (generateBill.isChargeTypeNRC(billingOrderData)) {
-						// code to be developed latter
+						
 						System.out.println("---- NRC ---");
 							billingOrderCommand = generateBill.getOneTimeBill(billingOrderData);
 							billingOrderCommands.add(billingOrderCommand);
@@ -82,12 +56,6 @@ public class GenerateBillingOrderServiceImplementation implements
 
 						System.out.println("---- RC ----");
 
-						BigDecimal pricePerMonth = null;
-						LocalDate startDate = null;
-						LocalDate endDate = null;
-						BigDecimal price = null;
-						LocalDate invoiceTillDate = null;
-						LocalDate nextbillDate = null;
 						// monthly
 						if (billingOrderData.getDurationType()
 								.equalsIgnoreCase("month(s)") ) {
@@ -118,7 +86,7 @@ public class GenerateBillingOrderServiceImplementation implements
 								}
 							}
 
-							// weekly
+						// weekly
 						} else if (billingOrderData.getDurationType()
 								.equalsIgnoreCase("week(s)")) {
 
@@ -149,7 +117,7 @@ public class GenerateBillingOrderServiceImplementation implements
 								}
 							}
 
-							// daily
+						// daily
 						} else if (billingOrderData.getDurationType()
 								.equalsIgnoreCase("daily")) {
 							// To be developed latter

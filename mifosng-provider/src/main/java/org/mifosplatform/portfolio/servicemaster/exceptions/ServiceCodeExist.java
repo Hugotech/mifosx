@@ -5,7 +5,7 @@ import org.mifosplatform.infrastructure.core.exception.AbstractPlatformDomainRul
 public class ServiceCodeExist extends AbstractPlatformDomainRuleException {
 
 		public ServiceCodeExist(final String serviceCode) {
-			super("service.is.already.exists.with.service.code", "service is already existed with charge code:"+serviceCode, serviceCode);
+			super("service.is.already.exists.with.service.code", "service is already existed with service code:"+serviceCode, serviceCode);
 		}
 
 	}

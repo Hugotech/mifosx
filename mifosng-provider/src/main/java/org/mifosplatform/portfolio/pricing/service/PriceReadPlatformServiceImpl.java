@@ -110,7 +110,7 @@ public class PriceReadPlatformServiceImpl implements PriceReadPlatformService{
 
 		        String sql = "SELECT sm.id AS id,sm.service_description AS service_description,p.plan_code as planCode,"
 				     +" pm.service_code AS service_code   FROM plan_detail pm, service sm,plan_master p"
-					 +" WHERE pm.service_code = sm.service_code AND p.id = pm.plan_id and pm.plan_id=?";
+					 +" WHERE pm.service_code = sm.service_code AND p.id = pm.plan_id and sm.is_deleted ='n' and  pm.plan_id=?";
 
 
 		        RowMapper<ServiceData> rm = new PeriodMapper();
@@ -140,7 +140,7 @@ public class PriceReadPlatformServiceImpl implements PriceReadPlatformService{
 			        String sql = "SELECT  p.plan_code as plan_code,pm.id as id,pm.service_code as service_code,se.service_description as service_description," +
 						"c.charge_description as charge_description,pm.charge_code as charge_code,pm.charging_variant as charging_variant," +
 						"pm.price as price from  plan_master p,plan_pricing  pm,service se,charge_codes c where p.id=pm.plan_code and pm.service_code = se.service_code and" +
-						" pm.charge_code=c.charge_code and pm.is_deleted='n' and pm.plan_code ='"+planCode+"'";
+						" pm.charge_code=c.charge_code and pm.is_deleted='n' and se.is_deleted='n' and pm.plan_code ='"+planCode+"'";
 
 
 			        RowMapper<ServiceData> rm = new PriceMapper();
@@ -242,7 +242,7 @@ public List<ServiceData> retrieveServiceCodeDetails(Long planCode) {
 
         String sql = "SELECT p.id AS planId, pm.id AS id,ch.charge_description AS chargeDescription, pm.plan_code AS plan_code,"
 			+"pm.service_code AS service_code,pm.charge_code AS charge_code  FROM plan_master p, plan_pricing pm,charge_codes ch"
-                 +" WHERE p.id = pm.plan_code AND  ch.charge_code = pm.charge_code and  pm.plan_code="+planCode;
+                 +" WHERE p.id = pm.plan_code AND  ch.charge_code = pm.charge_code and pm.is_deleted='n' and pm.plan_code="+planCode;
 
 
         RowMapper<ServiceData> rm = new ServiceMapper();

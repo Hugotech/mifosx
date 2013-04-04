@@ -129,5 +129,18 @@ catch (DataIntegrityViolationException dve) {
 				}
 		
 	}
+
+	@Override
+	public String retrieveTicketProblems(Long ticketId) {
+		try {
+		TicketMaster master=this.repository.findOne(ticketId);
+		String description=master.getDescription();
+		return description;
+		
+		}catch (DataIntegrityViolationException dve) {
+			handleDataIntegrityIssues(null, dve);
+			return "";
+				}
+	}
 }
 
