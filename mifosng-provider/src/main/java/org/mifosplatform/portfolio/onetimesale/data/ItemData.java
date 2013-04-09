@@ -3,6 +3,7 @@ package org.mifosplatform.portfolio.onetimesale.data;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.joda.time.LocalDate;
 import org.mifosplatform.infrastructure.core.data.EnumOptionData;
 import org.mifosplatform.portfolio.charge.data.ChargesData;
 
@@ -23,6 +24,7 @@ public class ItemData {
 	private String itemDescription;
 	private int warranty;
 	private String itemClass;
+	private LocalDate saleDate;
 
 	public ItemData(Long id, String itemCode, String itemDesc,String itemClass,String units,   String chargeCode, int warranty, BigDecimal unitPrice) {
 		
@@ -47,6 +49,7 @@ public class ItemData {
 		this.unitPrice=itemData.getUnitPrice();
 		this.totalPrice=totalPrice;
 		this.quantity=quantity;
+		this.saleDate=new LocalDate();
 	
 	}
 

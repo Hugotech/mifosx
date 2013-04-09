@@ -13,5 +13,7 @@ public interface OneTimeSaleReadPlatformService {
 
 	List<OneTimeSaleData> retrieveOnetimeSaleDate(Long clientId);
 
+	OneTimeSaleData retrieveSingleOneTimeSaleDetails(Long saleId);
+
 
 }

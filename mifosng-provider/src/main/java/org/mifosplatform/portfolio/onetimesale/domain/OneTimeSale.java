@@ -39,6 +39,9 @@ public class OneTimeSale extends AbstractAuditableCustom<AppUser, Long> {
 
 	@Column(name = "item_id")
 	private Long itemId;
+	
+	@Column(name = "bill_id")
+	private Long billId;
 
 	@Column(name = "is_invoiced", nullable = false)
 	private char deleted = 'n';
@@ -47,7 +50,7 @@ public class OneTimeSale extends AbstractAuditableCustom<AppUser, Long> {
 	
 	public OneTimeSale(Long clientId, Long itemId,String units,String quantity,
 			 String chargeCode, BigDecimal unitPrice,
-			BigDecimal totalPrice) {
+			BigDecimal totalPrice, LocalDate saleDate) {
 
 	this.clientId=clientId;
 	this.itemId=itemId;
@@ -56,7 +59,7 @@ public class OneTimeSale extends AbstractAuditableCustom<AppUser, Long> {
 	this.unitPrice=unitPrice;
 	this.totalPrice=totalPrice;
 	this.quantity=quantity;
-	this.saleDate=new LocalDate().toDate();
+	this.saleDate=saleDate.toDate();
 		}
 
 	public Long getClientId() {
@@ -99,6 +102,10 @@ public class OneTimeSale extends AbstractAuditableCustom<AppUser, Long> {
 		this.deleted = deleted;
 	}
 	
-	
+	public void updateBillId(Long billId) {
+        this.billId=billId;
+       
+    }
+
 
 }

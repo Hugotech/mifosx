@@ -43,7 +43,8 @@ public class GoogleGsonPortfolioApiJsonBillingSerializerService implements Portf
 	    private static final Set<String> SERVICE_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("id","serviceCode","serviceDescription","serviceType","serviceData"));
 
 	    private static final Set<String> ORDER_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("id","cancelledStatus","status","contractPeriod","nextBillDate","flag",
-	           "currentDate","plan_code","units","service_code","allowedtypes","data","servicedata","billing_frequency", "start_date", "contract_period","startDate","invoiceTillDate"));
+	           "currentDate","plan_code","units","service_code","allowedtypes","data","servicedata","billing_frequency", "start_date", "contract_period",
+	           "billingCycle","startDate","invoiceTillDate"));
 
 	    private static final Set<String> BILLINGCYCLE_DATA_PARAMETERS = new HashSet<String>(Arrays.asList("id",
 	            "billing_code","description","frequency","every","day_name","day_num","allowedtypes"));
@@ -445,6 +446,16 @@ public class GoogleGsonPortfolioApiJsonBillingSerializerService implements Portf
 		 final Gson gsonDeserializer = helper.createGsonBuilderWithParameterExclusionSerializationStrategy(ITEM_DATA_PARAMETERS,
 	                prettyPrint, responseParameters);
 	        return helper.serializedJsonFrom(gsonDeserializer, itemData.toArray());
+	}
+
+
+
+	@Override
+	public String serializePricingDataToJson(boolean prettyPrint,
+			Set<String> responseParameters, OneTimeSaleData salesData) {
+		final Gson gsonDeserializer = helper.createGsonBuilderWithParameterExclusionSerializationStrategy(ONETIMESALE_DATA_PARAMETERS,
+                prettyPrint, responseParameters);
+        return helper.serializedJsonFrom(gsonDeserializer,salesData);
 	}
 
 

@@ -22,6 +22,7 @@ import org.mifosplatform.infrastructure.core.exception.InvalidJsonException;
 import org.mifosplatform.infrastructure.core.exception.PlatformApiDataValidationException;
 import org.mifosplatform.infrastructure.core.exception.UnsupportedParameterException;
 import org.mifosplatform.portfolio.address.command.AddressCommand;
+import org.mifosplatform.portfolio.address.data.EntityTypecommand;
 import org.mifosplatform.portfolio.adjustment.commands.AdjustmentCommand;
 import org.mifosplatform.portfolio.billingcycle.command.BillingCycleCommand;
 import org.mifosplatform.portfolio.billingmaster.command.BillMasterCommand;
@@ -1148,7 +1149,7 @@ Set<String> modifiedParameters = new HashSet<String>();
 	        Map<String, String> requestMap = gsonConverter.fromJson(jsonRequestBody, typeOfMap);
 
 	        // preClosureInterestRate
-	        Set<String> supportedParams = new HashSet<String>(Arrays.asList("itemId","locale","units","chargeCode","unitPrice","quantity","totalPrice"));
+	        Set<String> supportedParams = new HashSet<String>(Arrays.asList("itemId","locale","dateFormat","units","chargeCode","unitPrice","quantity","totalPrice","saleDate"));
 	        checkForUnsupportedParameters(requestMap, supportedParams);
 	        Set<String> modifiedParameters = new HashSet<String>();
 
@@ -1158,11 +1159,11 @@ Set<String> modifiedParameters = new HashSet<String>();
 	        BigDecimal unitPrice = extractBigDecimalParameter("unitPrice", requestMap, modifiedParameters);
 	        String quantity = extractStringParameter("quantity", requestMap, modifiedParameters);
 	        BigDecimal totalPrice = extractBigDecimalParameter("totalPrice", requestMap, modifiedParameters);
+	        LocalDate saleDate=extractLocalDateParameter("saleDate", requestMap, modifiedParameters);
 	      
 
 
-	        return new OneTimeSaleCommand(modifiedParameters,itemId,units, chargeCode, unitPrice, quantity,
-	        		totalPrice);
+	        return new OneTimeSaleCommand(modifiedParameters,itemId,units, chargeCode, unitPrice, quantity,totalPrice,saleDate);
 	}
 
 	@Override
@@ -1187,6 +1188,28 @@ Set<String> modifiedParameters = new HashSet<String>();
 	        Long warranty = extractLongParameter("warranty", requestMap, modifiedParameters);
 
 	        return new ItemCommand(modifiedParameters,itemCode,itemDescription,itemClass, chargeCode, unitPrice, warranty,units);
+	}
+
+	@Override
+	public EntityTypecommand convertJsonToEntityTypeCommand(Object object,
+			String jsonRequestBody) {
+
+		if(StringUtils.isBlank(jsonRequestBody)){throw new InvalidJsonException();}
+		Type typeOfMap=new TypeToken<Map<String,String>>() {}.getType();
+		Map<String,String> requestMap=gsonConverter.fromJson(jsonRequestBody,typeOfMap);
+		Set<String> supportedParams=new HashSet<String>(Arrays.asList("entityid","entityCode","entityName","parentEntityId"));
+		checkForUnsupportedParameters(requestMap, supportedParams);
+		Set<String> modifiedParameters=new HashSet<String>();
+		Long entityId=extractLongParameter("entityId", requestMap, modifiedParameters);
+		String entityCode=extractStringParameter("entityCode", requestMap, modifiedParameters);
+		String entityName=extractStringParameter("entityName", requestMap, modifiedParameters);
+		Long parentEntityId=extractLongParameter("parentEntityId", requestMap, modifiedParameters);
+		
+		return new EntityTypecommand(entityId,entityCode,entityName,parentEntityId);
+		
+		
+		
+		
 	}
 	}
 

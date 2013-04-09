@@ -20,6 +20,7 @@ import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
 import org.mifosplatform.portfolio.address.command.AddressCommand;
 import org.mifosplatform.portfolio.address.data.AddressData;
+import org.mifosplatform.portfolio.address.data.EntityTypecommand;
 import org.mifosplatform.portfolio.address.service.AddressReadPlatformService;
 import org.mifosplatform.portfolio.address.service.AddressWritePlatformService;
 import org.mifosplatform.portfolio.billingproduct.PortfolioApiDataBillingConversionService;
@@ -86,12 +87,11 @@ public class ClientAddressApiResource {
        
         boolean prettyPrint = ApiParameterHelper.prettyPrint(uriInfo.getQueryParameters());
 
-        List<AddressData> addressdata = this.addressReadPlatformService.retrieveSelectedAddressDetails(selectedname);
+       // List<AddressData> addressdata = this.addressReadPlatformService.retrieveSelectedAddressDetails(selectedname);
+        List<AddressData> citiesData = this.addressReadPlatformService.retrieveCityDetails(selectedname);
+          
+        AddressData data=new AddressData(citiesData, null, null, null);
         
-        
-        
-        AddressData data=new AddressData(addressdata, null, null, null);
-
         return this.apiJsonSerializerService.serializeDepositAddressDataToJson(prettyPrint, responseParameters, data);
     }
 	@GET
@@ -139,5 +139,17 @@ CommandProcessingResult userId = this.addressWritePlatformService.createAddress(
 		final AddressCommand command = this.apiDataConversionService.convertJsonToAddressCommand(null, addrId, jsonRequestBody);
 		CommandProcessingResult entityIdentifier=this.addressWritePlatformService.updateAddress(addrId,command);
 		return Response.ok().entity(entityIdentifier).build();
+	}
+	
+	@POST
+	@Path("{entityType}/new")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response NewRecord(@PathParam("entityType") final String entityType, final String jsonRequestBody) {
+
+		 EntityTypecommand command= this.apiDataConversionService.convertJsonToEntityTypeCommand(null,jsonRequestBody);
+
+CommandProcessingResult userId = this.addressWritePlatformService.createNewRecord(command,entityType);
+		return Response.ok().entity(userId).build();
 	}
 }

@@ -146,4 +146,17 @@ public class OneTimeSaleReadPlatformServiceImpl implements
 		}
 
 	}
-}
+
+	@Override
+	public OneTimeSaleData retrieveSingleOneTimeSaleDetails(Long saleId) {
+		context.authenticatedUser();
+
+		OneTimeSalesDataMapper mapper = new OneTimeSalesDataMapper();
+
+		String sql = "select " + mapper.schema()
+				+ " where ots.id = ? ";
+
+		return this.jdbcTemplate.queryForObject(sql, mapper, new Object[] { saleId });
+	}
+	}
+

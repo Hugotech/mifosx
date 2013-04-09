@@ -18,9 +18,11 @@ import javax.ws.rs.core.UriInfo;
 
 import org.mifosplatform.infrastructure.core.api.ApiParameterHelper;
 import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
+import org.mifosplatform.portfolio.adjustment.service.ClientBalanceReadPlatformService;
 import org.mifosplatform.portfolio.billingproduct.PortfolioApiDataBillingConversionService;
 import org.mifosplatform.portfolio.billingproduct.PortfolioApiJsonBillingSerializerService;
 import org.mifosplatform.portfolio.charge.data.ChargesData;
+import org.mifosplatform.portfolio.clientbalance.data.ClientBalanceData;
 import org.mifosplatform.portfolio.itemmaster.api.ItemMasterReadPlatformService;
 import org.mifosplatform.portfolio.onetimesale.command.OneTimeSaleCommand;
 import org.mifosplatform.portfolio.onetimesale.data.ItemData;
@@ -28,6 +30,8 @@ import org.mifosplatform.portfolio.onetimesale.data.OneTimeSaleData;
 import org.mifosplatform.portfolio.onetimesale.service.InvoiceOneTimeSale;
 import org.mifosplatform.portfolio.onetimesale.service.OneTimeSaleReadPlatformService;
 import org.mifosplatform.portfolio.onetimesale.service.OneTimeSaleWritePlatformService;
+import org.mifosplatform.portfolio.plan.data.ServiceData;
+import org.mifosplatform.portfolio.pricing.data.PricingData;
 import org.mifosplatform.portfolio.pricing.service.PriceReadPlatformService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -55,6 +59,9 @@ public class OneTimeSalesApiResource {
 	@Autowired
 	private  ItemMasterReadPlatformService itemMasterReadPlatformService;
 	
+	 @Autowired
+	    private ClientBalanceReadPlatformService clientBalanceReadPlatformService;
+	
 	@Autowired
 	private  PriceReadPlatformService priceReadPlatformService;
 	
@@ -69,8 +76,14 @@ public class OneTimeSalesApiResource {
 	public Response createNewSale(@PathParam("clientId") final Long clientId,final String jsonRequestBody) {
 
 		OneTimeSaleCommand command = this.apiDataConversionService.convertJsonToSalesCommand(null, jsonRequestBody);
+		
+		List<ClientBalanceData> clientBalancedatas = clientBalanceReadPlatformService.retrieveAllClientBalances(clientId);
+		Long clientBalanceId = null;
+		if(clientBalancedatas.size()==1){
+			clientBalanceId = clientBalancedatas.get(0).getId();
+		}
 
-		CommandProcessingResult userId = this.oneTimeSaleWritePlatformService.createOneTimeSale(command,clientId);
+		CommandProcessingResult userId = this.oneTimeSaleWritePlatformService.createOneTimeSale(command,clientId,clientBalanceId);
 		
 		this.invoiceOneTimeSale.invoiceOneTimeSale(clientId);
 		
@@ -90,8 +103,10 @@ public class OneTimeSalesApiResource {
 						.getQueryParameters());
 		final boolean prettyPrint = ApiParameterHelper.prettyPrint(uriInfo
 				.getQueryParameters());
+		
+		OneTimeSaleData data=null;
 
-		OneTimeSaleData data = handleTemplateRelatedData(responseParameters);
+		 data= handleTemplateRelatedData(responseParameters,data);
 
 		
 
@@ -100,11 +115,11 @@ public class OneTimeSalesApiResource {
 	}
 
 	private OneTimeSaleData handleTemplateRelatedData(
-			Set<String> responseParameters) {
+			Set<String> responseParameters, OneTimeSaleData salesData) {
 		List<ChargesData> chargeDatas = this.priceReadPlatformService
 				.retrieveChargeCode();
 		List<ItemData> itemData = this.oneTimeSaleReadPlatformService.retrieveItemData();
-		return new OneTimeSaleData(chargeDatas,itemData);
+		return new OneTimeSaleData(chargeDatas,itemData,salesData);
 	}
 	
 	@GET
@@ -144,7 +159,7 @@ public class OneTimeSalesApiResource {
 						.getQueryParameters());
 		final boolean prettyPrint = ApiParameterHelper.prettyPrint(uriInfo
 				.getQueryParameters());
-		OneTimeSaleData data = handleTemplateRelatedData(responseParameters);
+		//OneTimeSaleData data = handleTemplateRelatedData(responseParameters,null);
 		List<ItemData> itemCodeData = this.oneTimeSaleReadPlatformService.retrieveItemData();
 		ItemData itemData = this.itemMasterReadPlatformService.retrieveSingleItem(itemId);
 		itemData=new ItemData(itemCodeData,itemData,null,null);
@@ -179,7 +194,30 @@ public class OneTimeSalesApiResource {
 				prettyPrint, responseParameters,itemData);
 	}
 
+	@GET
+	@Path("{saleId}/oneTimeSale")
+	@Consumes({ MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String retrieveSingleOneTimeSaleData(@PathParam("saleId") final Long saleId,
+			@Context final UriInfo uriInfo) {
+
+		// context.authenticatedUser().validateHasReadPermission("CLIENT");
+
+		final Set<String> responseParameters = ApiParameterHelper
+				.extractFieldsForResponseIfProvided(uriInfo
+						.getQueryParameters());
+		final boolean prettyPrint = ApiParameterHelper.prettyPrint(uriInfo
+				.getQueryParameters());
+
+		OneTimeSaleData salesData = this.oneTimeSaleReadPlatformService.retrieveSingleOneTimeSaleDetails(saleId);
+		
+		salesData = handleTemplateRelatedData(responseParameters,salesData);
+
 	
+
+		return this.apiJsonSerializerService.serializePricingDataToJson(
+				prettyPrint, responseParameters, salesData);
+	}
 		
 	}
 

@@ -10,6 +10,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
+import com.lowagie.text.Image;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.CMYKColor;
 import com.lowagie.text.pdf.PdfContentByte;
@@ -29,7 +30,7 @@ Connection conn = (Connection) DriverManager.getConnection(
 "mysql");
 Statement stmt = (Statement) conn.createStatement();
 ResultSet rs = stmt
-.executeQuery("select *from bill_master b,additional_student_personal_data c,bill_details be where  b.id = be.bill_id and b.id=108;");
+.executeQuery("SELECT b.*,c.*,mc.*,ca.*  FROM bill_master b,company_address_detail ca,m_client mc LEFT JOIN client_address c ON c.client_id = mc.id   WHERE b.client_id = mc.id");
 // ResultSet rs1 = stmt.executeQuery("select * from bill_details");
 
 for(int i=0;rs.next();i++)
@@ -69,9 +70,9 @@ cell.disableBorderSide(PdfPCell.RIGHT);
 table.addCell(cell);
 PdfPCell cell0 = new PdfPCell();
 Paragraph add0 = new Paragraph("", b);
-Paragraph add1 = new Paragraph(""+rs.getString("county")+","+rs.getString("street"), b);
+Paragraph add1 = new Paragraph(""+rs.getString("country")+","+rs.getString("street"), b);
 add1.setSpacingBefore(10);
-Paragraph add2 = new Paragraph(""+rs.getString("flat_no")+","+rs.getString("state")+"-"+rs.getString("zip_code"), b);
+Paragraph add2 = new Paragraph(","+rs.getString("state")+"-"+rs.getString("zip"), b);
 cell0.setColspan(4);
 cell0.disableBorderSide(PdfPCell.LEFT);
 cell0.addElement(add0);
@@ -79,10 +80,10 @@ cell0.addElement(add1);
 cell0.addElement(add2);
 table.addCell(cell0);
 //
-// Image image = Image.getInstance("logo.jpg");
-// image.scaleAbsolute(60,60);
+ Image image = Image.getInstance("companyLogo.jpg");
+ image.scaleAbsolute(90,90);
 PdfPCell cell2 = new PdfPCell();
-// cell2.addElement(image);
+ cell2.addElement(image);
 cell2.disableBorderSide(PdfPCell.TOP);
 cell2.disableBorderSide(PdfPCell.BOTTOM);
 cell2.disableBorderSide(PdfPCell.LEFT);

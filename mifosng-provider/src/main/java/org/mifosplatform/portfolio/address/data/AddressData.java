@@ -14,7 +14,8 @@ public class AddressData {
 	private String state;
 	private String country;
 	private List<AddressData> datas;
-	private List<String> countryData,stateData,cityData; 
+	private List<String> countryData,stateData,cityData;
+	private String data; 
 	
 	
 
@@ -42,6 +43,15 @@ public class AddressData {
 	this.countryData=countryData;
 	this.stateData=statesData;
 	this.cityData=citiesData;
+	}
+
+
+
+	public AddressData(Long id, String data) {
+
+	this.id=id;
+	this.data=data;
+	
 	}
 
 

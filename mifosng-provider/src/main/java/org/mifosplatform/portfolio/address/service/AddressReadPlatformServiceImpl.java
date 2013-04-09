@@ -4,12 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
 import org.mifosplatform.infrastructure.core.service.TenantAwareRoutingDataSource;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
-import org.mifosplatform.portfolio.address.command.AddressCommand;
 import org.mifosplatform.portfolio.address.data.AddressData;
-import org.mifosplatform.portfolio.plan.data.ServiceData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -147,5 +144,38 @@ public class AddressReadPlatformServiceImpl implements AddressReadPlatformServic
 
 		return this.jdbcTemplate.query(sql, mapper, new Object[] {});
 
+	}
+
+
+	@Override
+	public List<AddressData> retrieveCityDetails(String selectedname) {
+		context.authenticatedUser();
+		DataMapper mapper = new DataMapper();
+
+		String sql = "select " + mapper.schema(selectedname);
+
+		return this.jdbcTemplate.query(sql, mapper, new Object[] {});
+
+	}
+
+	private static final class DataMapper implements RowMapper<AddressData> {
+
+		public String schema(String placeHolder) {
+			return "id as id,"+placeHolder+"_name as data from "+placeHolder;
+
+		}
+
+		@Override
+		public AddressData mapRow(final ResultSet rs,
+				@SuppressWarnings("unused") final int rowNum)
+				throws SQLException {
+
+			Long id = rs.getLong("id");
+			String data = rs.getString("data");
+		
+			//String serviceDescription = rs.getString("service_description");
+			return new AddressData(id,data);
+
+		}
 	}
 }

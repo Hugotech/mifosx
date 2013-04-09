@@ -1,6 +1,8 @@
 package org.mifosplatform.portfolio.order.data;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -26,10 +28,48 @@ public class OrderPriceData {
 	private LocalDate billStartDate;
 	private LocalDate billEndDate;
 	private LocalDate nextBillDate;
+	private String billingCycle;
+	private String billingFrequency;
+
+	public Long getClientId() {
+		return clientId;
+	}
+
+
+
+	public LocalDate getBillStartDate() {
+		return billStartDate;
+	}
+
+
+
+	public LocalDate getBillEndDate() {
+		return billEndDate;
+	}
+
+
+
+	public LocalDate getNextBillDate() {
+		return nextBillDate;
+	}
+
+
+
+	public String getBillingCycle() {
+		return billingCycle;
+	}
+
+
+
+	public String getBillingFrequency() {
+		return billingFrequency;
+	}
+
+
 
 	public OrderPriceData(Long id, Long clientId, Long serviceId,
 			String chargeCode, String chargeType, String chargeDuration,
-			String durationtype, BigDecimal price, LocalDate billStartDate, LocalDate billEndDate, LocalDate nextBillDate, LocalDate invoiceTillDate) {
+			String durationtype, BigDecimal price, LocalDate billStartDate, LocalDate billEndDate, LocalDate nextBillDate, LocalDate invoiceTillDate, String billingAlign, String billingFrequency) {
 
 		this.id=id;
 		this.orderId=clientId;
@@ -44,8 +84,43 @@ public class OrderPriceData {
 		this.nextBillDate=nextBillDate;
 		this.serviceId=null;
 		this.invoiceTillDate=invoiceTillDate;
+		this.billingFrequency=billingFrequency;
+		this.billingCycle=this.getbillingCycle(billingAlign);
 
 
+	}
+
+
+
+	private String getbillingCycle(String billingAlign) {
+             
+		 String day = null;
+		
+			if(this.billingFrequency.equalsIgnoreCase("Weekly")){
+				if(billingAlign.equalsIgnoreCase("y")){
+				return "Every Monday";
+		}else {
+			SimpleDateFormat f = new SimpleDateFormat("EEEE");
+		      day="Every "+f.format(billStartDate.toDate());
+		     return day;
+
+		}
+	}else if(this.billingFrequency.equalsIgnoreCase("Monthly")){
+			if(billingAlign.equalsIgnoreCase("y")){
+				day="1st day of the Month";
+				return day;
+			}
+			else{
+				 Calendar cal = Calendar.getInstance();
+				    cal.setTime(billStartDate.toDate());
+				     day = "Every "+cal.get(Calendar.DAY_OF_MONTH)+"th of the Month";
+				    return day;
+			}
+		}
+			return day;
+		
+		
+		
 	}
 
 

@@ -7,7 +7,7 @@ import org.mifosplatform.portfolio.onetimesale.command.OneTimeSaleCommand;
 
 public interface OneTimeSaleWritePlatformService {
 
-	CommandProcessingResult createOneTimeSale(OneTimeSaleCommand command,Long clientId);
+	CommandProcessingResult createOneTimeSale(OneTimeSaleCommand command,Long clientId, Long clientBalanceId);
 
 	BigDecimal calculatePrice(Long itemId, Long quantity);
 

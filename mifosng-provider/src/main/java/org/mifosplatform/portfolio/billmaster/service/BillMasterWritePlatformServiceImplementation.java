@@ -40,6 +40,8 @@ import org.mifosplatform.portfolio.billmaster.domain.BillMaster;
 import org.mifosplatform.portfolio.billmaster.domain.BillMasterCommandValidator;
 import org.mifosplatform.portfolio.billmaster.domain.BillMasterRepository;
 import org.mifosplatform.portfolio.financialtransaction.data.FinancialTransactionsData;
+import org.mifosplatform.portfolio.onetimesale.domain.OneTimeSale;
+import org.mifosplatform.portfolio.onetimesale.domain.OneTimeSaleRepository;
 import org.mifosplatform.portfolio.payment.domain.Payment;
 import org.mifosplatform.portfolio.payment.domain.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +53,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
+import com.lowagie.text.Image;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.CMYKColor;
 import com.lowagie.text.pdf.PdfContentByte;
@@ -73,6 +76,7 @@ public class BillMasterWritePlatformServiceImplementation implements
 	private final ClientBalanceRepository clientBalanceRepository;
 	private final JdbcTemplate jdbcTemplate;
 	private final TenantAwareRoutingDataSource dataSource;
+	private final OneTimeSaleRepository oneTimeSaleRepository;
 
 	@Autowired
 	public BillMasterWritePlatformServiceImplementation(
@@ -85,7 +89,8 @@ public class BillMasterWritePlatformServiceImplementation implements
 			final InvoiceTaxRepository invoiceTaxRepository,
 			final InvoiceRepository invoiceRepository,
 			final ClientBalanceRepository clientBalanceRepository,
-			final TenantAwareRoutingDataSource dataSource) {
+			final TenantAwareRoutingDataSource dataSource,
+			final OneTimeSaleRepository oneTimeSaleRepository) {
 
 		this.context = context;
 		this.billMasterRepository = billMasterRepository;
@@ -98,6 +103,7 @@ public class BillMasterWritePlatformServiceImplementation implements
 		this.invoiceRepository=invoiceRepository;
 		this.jdbcTemplate = new JdbcTemplate(dataSource);
 		this.dataSource = dataSource;
+		this.oneTimeSaleRepository=oneTimeSaleRepository;
 	}
 
 	@Transactional
@@ -167,7 +173,7 @@ public class BillMasterWritePlatformServiceImplementation implements
 
 		for (BillDetail billDetail : billDetails) {
 
-			if (billDetail.getTransactionType().equalsIgnoreCase("CHARGES")) {
+			if (billDetail.getTransactionType().equalsIgnoreCase("SERVICE_CHARGES")) {
 
 				if (billDetail.getAmount() != null)
 					chargeAmount = chargeAmount.add(billDetail.getAmount());
@@ -281,10 +287,10 @@ public class BillMasterWritePlatformServiceImplementation implements
 			cell0.addElement(add2);
 			table.addCell(cell0);
 
-			// Image image = Image.getInstance("logo.jpg");
-			// image.scaleAbsolute(60, 60);
+			 Image image = Image.getInstance(FileUtils.MIFOSX_BASE_DIR +File.separator+billDetails.getCompanyLogo());
+			 image.scaleAbsolute(90,90);
 			PdfPCell cell2 = new PdfPCell();
-			// cell2.addElement(image);
+			 cell2.addElement(image);
 			cell2.disableBorderSide(PdfPCell.TOP);
 			cell2.disableBorderSide(PdfPCell.BOTTOM);
 			cell2.disableBorderSide(PdfPCell.LEFT);
@@ -292,15 +298,14 @@ public class BillMasterWritePlatformServiceImplementation implements
 			cell2.setColspan(2);
 			table.addCell(cell2);
 			PdfPCell cell02 = new PdfPCell();
-			Paragraph addr1 = new Paragraph("Hugo Technologies LLP",
+			Paragraph addr1 = new Paragraph(billDetails.getAddr1(),
 					FontFactory.getFont(FontFactory.HELVETICA, 8, Font.BOLD,
 							new CMYKColor(0, 255, 255, 17)));
-			Paragraph addr2 = new Paragraph("# 501, Sai Balaji Cubicles,", b);
-			Paragraph addr3 = new Paragraph("Raghavendra Society, Kondapur,", b);
-			Paragraph addr4 = new Paragraph(" Hyderabad - 500 084, AP, India.",
-					b);
-			Paragraph addr5 = new Paragraph(" Tel:	+91-40-65141823", b);
-			Paragraph addr6 = new Paragraph("www.hugotechnologies.com", b);
+			Paragraph addr2 = new Paragraph(billDetails.getAddr2(), b);
+			Paragraph addr3 = new Paragraph(billDetails.getOffCity()+","+billDetails.getOffState(), b);
+			Paragraph addr4 = new Paragraph(billDetails.getOffCountry()+"-"+billDetails.getOffZip(),b);
+			Paragraph addr5 = new Paragraph(" Tel: "+billDetails.getPhnNum(), b);
+			Paragraph addr6 = new Paragraph(billDetails.getEmailId(), b);
 			cell02.addElement(addr1);
 			cell02.addElement(addr2);
 			cell02.addElement(addr3);
@@ -558,18 +563,30 @@ public class BillMasterWritePlatformServiceImplementation implements
 				payment.updateBillId(billId);
 				this.paymentRepository.save(payment);
 			}
-			if (transIds.getTransactionType().equalsIgnoreCase("CHARGES")) {
+			if (transIds.getTransactionType().equalsIgnoreCase("SERVICE_CHARGES")) {
 				BillingOrder billingOrder = this.billingOrderRepository
 						.findOne(transIds.getTransactionId());
 				billingOrder.updateBillId(billId);
 				this.billingOrderRepository.save(billingOrder);
 			}
 			
-			if (transIds.getTransactionType().equalsIgnoreCase("INVOCE")) {
+			if (transIds.getTransactionType().equalsIgnoreCase("INVOICE")) {
 				Invoice invoice = this.invoiceRepository.findOne(transIds.getTransactionId());
 				invoice.updateBillId(billId);
 				this.invoiceRepository.save(invoice);
 			}
+			
+
+            if (transIds.getTransactionType().equalsIgnoreCase("ONETIME_CHARGES")) {
+              /*  OneTimeSale  oneTimeSale = this.oneTimeSaleRepository.findOne(transIds.getTransactionId());
+                oneTimeSale.updateBillId(billId);
+                this.oneTimeSaleRepository.save(oneTimeSale);*/
+            	
+            	BillingOrder billingOrder = this.billingOrderRepository
+						.findOne(transIds.getTransactionId());
+				billingOrder.updateBillId(billId);
+				this.billingOrderRepository.save(billingOrder);
+            }
 
 		}
 

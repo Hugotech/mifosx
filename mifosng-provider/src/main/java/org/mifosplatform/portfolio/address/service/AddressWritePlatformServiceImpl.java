@@ -3,6 +3,7 @@ package org.mifosplatform.portfolio.address.service;
 import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
 import org.mifosplatform.portfolio.address.command.AddressCommand;
+import org.mifosplatform.portfolio.address.data.EntityTypecommand;
 import org.mifosplatform.portfolio.address.domain.Address;
 import org.mifosplatform.portfolio.address.domain.AddressRepository;
 import org.mifosplatform.portfolio.savingsdepositaccount.exception.DepositAccountNotFoundException;
@@ -18,13 +19,19 @@ public class AddressWritePlatformServiceImpl implements AddressWritePlatformServ
 	  private final static Logger logger = LoggerFactory.getLogger(AddressWritePlatformServiceImpl.class);
 	private PlatformSecurityContext context;
 	private AddressRepository addressRepository;
+	private CityRepository cityRepository;
+	private StateRepository stateRepository;
+	private CountryRepository countryRepository;
 
 
 	@Autowired
-	public AddressWritePlatformServiceImpl(final PlatformSecurityContext context,
-			final AddressRepository addressRepository) {
+	public AddressWritePlatformServiceImpl(final PlatformSecurityContext context,final CityRepository cityRepository,
+			final StateRepository stateRepository,final CountryRepository countryRepository,final AddressRepository addressRepository) {
 		this.context = context;
 		this.addressRepository = addressRepository;
+		this.cityRepository=cityRepository;
+		this.stateRepository=stateRepository;
+		this.countryRepository=countryRepository;
 		
 
 	}
@@ -81,6 +88,49 @@ public class AddressWritePlatformServiceImpl implements AddressWritePlatformServ
 			return new CommandProcessingResult(Long.valueOf(-1));
 		}
 
+	}
+
+	@Override
+	public CommandProcessingResult createNewRecord(EntityTypecommand command,
+			String entityType) {
+  try{
+	  
+	  this.context.authenticatedUser();
+	  EntityTypecommandValidator validator=new EntityTypecommandValidator(command);
+		validator.validateForCreate();
+	  if(entityType.equalsIgnoreCase("city")){
+		  City city=new City(command.getEntityCode(),command.getEntityName(),command.getParentEntityId());
+		  this.cityRepository.save(city);
+		  return new CommandProcessingResult(Long.valueOf(city.getId()));
+	  }else if(entityType.equalsIgnoreCase("state")){
+		  
+		  State state=new State(command.getEntityCode(),command.getEntityName(),command.getParentEntityId());
+		  this.stateRepository.save(state);
+		  
+		  return new CommandProcessingResult(Long.valueOf(state.getId()));
+	  }else{
+		  Country country=new Country(command.getEntityCode(),command.getEntityName());
+		  this.countryRepository.save(country);
+		  return new CommandProcessingResult(Long.valueOf(country.getId()));
+	  }
+	  
+		  
+	  
+  } catch (DataIntegrityViolationException dve) {
+		handleDataIntegrityIssues(command, dve);
+		return new CommandProcessingResult(Long.valueOf(-1));
+	}
+
+		
+		
+		
+		
+	}
+
+	private void handleDataIntegrityIssues(EntityTypecommand command,
+			DataIntegrityViolationException dve) {
+		// TODO Auto-generated method stub
+		
 	}
 }
 

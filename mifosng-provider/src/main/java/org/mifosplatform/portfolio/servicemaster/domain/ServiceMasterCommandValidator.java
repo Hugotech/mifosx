@@ -21,7 +21,7 @@ public class ServiceMasterCommandValidator {
 		public void validateForCreate() {
 	         List<ApiParameterError> dataValidationErrors = new ArrayList<ApiParameterError>();
 			DataValidatorBuilder baseDataValidator = new DataValidatorBuilder(dataValidationErrors).resource("subscription");
-			baseDataValidator.reset().parameter("serviceCode").value(command.getServiceCode()).notBlank().notNull();
+			baseDataValidator.reset().parameter("serviceCode").value(command.getServiceCode()).notBlank().notNull().notExceedingLengthOf(10);
 			//baseDataValidator.reset().parameter("subscription_type").value(command.getSubscription_type()).notBlank().notNull();
 			baseDataValidator.reset().parameter("serviceDescription").value(command.getServiceDescription()).notBlank().notNull();
 			baseDataValidator.reset().parameter("serviceType").value(command.getServiceType()).notBlank().notNull();

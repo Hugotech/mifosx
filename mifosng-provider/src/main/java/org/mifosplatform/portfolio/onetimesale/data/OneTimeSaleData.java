@@ -31,13 +31,16 @@ public class OneTimeSaleData {
 	private LocalDate saleDate;
 	private Long clientId;
 	private String isInvoiced;
+	private OneTimeSaleData salesData;
 	
 
 	public OneTimeSaleData(List<ChargesData> chargeDatas,
-			List<ItemData> itemData) {
+			List<ItemData> itemData, OneTimeSaleData salesData) {
 		
 		this.chargesDatas=chargeDatas;
 		this.itemDatas=itemData;
+		this.saleDate=new LocalDate();
+		this.salesData=salesData;
 		
 	}
 

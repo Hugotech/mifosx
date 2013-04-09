@@ -1,5 +1,6 @@
 package org.mifosplatform.portfolio.billingorder.api;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -12,6 +13,7 @@ import javax.ws.rs.core.Response;
 
 import org.joda.time.LocalDate;
 import org.mifosplatform.portfolio.billingorder.data.GenerateInvoiceData;
+import org.mifosplatform.portfolio.billingorder.data.InvoiceAmountIdentifier;
 import org.mifosplatform.portfolio.billingorder.service.BillingOrderReadPlatformService;
 import org.mifosplatform.portfolio.billingorder.service.InvoiceClient;
 import org.mifosplatform.portfolio.billingproduct.PortfolioApiDataBillingConversionService;
@@ -45,9 +47,9 @@ public class BillingOrderApiResourse {
 
 		 	LocalDate  processDate = this.apiDataConversionService.convertJsonToBillingProductCommand(null, jsonRequestBody);
 		 	
-		 	invoiceClient.invoicingSingleClient(clientId, processDate);
+		 	BigDecimal invoiceAmount=invoiceClient.invoicingSingleClient(clientId, processDate);
 
-		return Response.ok().entity(1l).build();
+		return Response.ok().entity(new InvoiceAmountIdentifier(invoiceAmount)).build();
 	}
 	
 	@POST

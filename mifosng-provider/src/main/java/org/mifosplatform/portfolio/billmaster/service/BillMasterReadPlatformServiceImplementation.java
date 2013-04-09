@@ -42,7 +42,7 @@ public class BillMasterReadPlatformServiceImplementation implements
 		FinancialTransactionsMapper financialTransactionsMapper = new FinancialTransactionsMapper();
 		String sql = "select " + financialTransactionsMapper.financialTransactionsSchema();
 		return this.jdbcTemplate.query(sql, financialTransactionsMapper,
-				new Object[] { clientId,clientId,clientId,clientId });
+				new Object[] { clientId,clientId,clientId,clientId,clientId });
 
 	}
 
@@ -64,8 +64,8 @@ public class BillMasterReadPlatformServiceImplementation implements
 
 		public String financialTransactionsSchema() {
 
-			return  	 " a.id as transId,Date_format(invoice_date,'%Y-%m-%d') transDate,'CHARGES' AS transType, charge_amount AS amount"
-						+" from charge a,invoice b where a.invoice_id=b.id"
+			return  	 " a.id as transId,Concat(Date_format(charge_start_date,'%Y-%m-%d'),' to ' ,Date_format(charge_end_date,'%Y-%m-%d')) transDate,'SERVICE_CHARGES' AS transType, charge_amount AS amount"
+						+" from charge a,invoice b, orders c where a.invoice_id=b.id and a.order_id=c.id"
 						+" and a.bill_id IS NULL AND invoice_date <= NOW() AND b.client_id = ?"
 						+" union all"
 						+" Select  a.id as transId,Date_format(invoice_date,'%Y-%m-%d') transDate,'TAXES' AS transType, a.tax_amount AS amount"
@@ -84,20 +84,10 @@ public class BillMasterReadPlatformServiceImplementation implements
 						+" SELECT pa.id as transId,Date_format(pa.payment_date,'%Y-%m-%d') transDate,concat('PAYMENT',' - ',p.paymode_description) AS transType,"
 						+" pa.amount_paid AS invoiceAmount  "
 						+"FROM payments pa,paymodes p"
-						+" WHERE bill_id IS NULL AND payment_date <= NOW() AND client_id =? and pa.paymode_code = p.paymode_code";
-
-//			return " 'INVOICE' AS billType, invocie_amount as invoiceAmount FROM invoice"
-//					+ " WHERE bill_id IS NULL AND invocie_date <= NOW() AND client_id = ?"
-//					+ " UNION ALL"
-//					+ " SELECT 'ADJUSTMENT' AS billType,"
-//					+ " CASE adjustment_type"
-//					+ " WHEN 'DEBIT' THEN adjustment_amount"
-//					+ " WHEN 'CREDIT' THEN -adjustment_amount"
-//					+ " END AS invoiceAmount"
-//					+ " FROM adjustment WHERE bill_id IS NULL AND adjustment_date <= NOW() AND client_id = ?"
-//					+ " UNION ALL"
-//					+ " SELECT 'PAYMENT' AS billType, amount_paid as invoiceAmount"
-//					+ " FROM payments WHERE bill_id IS NULL AND payment_date <= NOW() AND client_id = ?";
+						+" WHERE bill_id IS NULL AND payment_date <= NOW() AND client_id =? and pa.paymode_code = p.paymode_code"
+						+"  union all"
+						+" SELECT a.id as transId ,Date_format(sale_date,'%Y-%m-%d') transDate,'ONETIME_CHARGES' AS transType,total_price  AS amount " 
+						+ "FROM charge a,invoice b , onetime_sale c WHERE a.invoice_id=b.id and a.order_id=c.id and a.bill_id IS NULL AND c.sale_date <= NOW() AND b.client_id = ?";
 
 
 		}
@@ -155,7 +145,9 @@ public class BillMasterReadPlatformServiceImplementation implements
 	private static final class BillMapper implements RowMapper<BillDetailsData> {
 
         public String billSchema() {
-            return " *from bill_master b, m_client mc left join client_address c on c.client_id = mc.id  WHERE b.client_id = mc.id ";
+            return " b.*,c.*, mc.*,ca.line_1 as addr1,ca.line_2 as addr2,ca.city as offCity,ca.state as offSate,ca.country as offCountry,"
+            	+"ca.zip as offZip,ca.phone_number as offPhnNum,ca.email_id as email,ca.company_logo as companyLogo  FROM bill_master b,"
+            		+"company_address_detail ca,m_client mc LEFT JOIN  client_address c  ON c.client_id = mc.id WHERE b.client_id = mc.id";
         }
 
 
@@ -170,10 +162,21 @@ public class BillMasterReadPlatformServiceImplementation implements
             String billPeriod = rs.getString("bill_Period");
 
             String street = rs.getString("street");
-            String zip = rs.getString("zip");
+            String zip = rs.getString("zip"); 
             String city = rs.getString("country");
             String state = rs.getString("state");
             String country = rs.getString("country");
+            
+            String addr1 = rs.getString("addr1");
+            String addr2 = rs.getString("addr2");
+            String offCity = rs.getString("offCity");
+            String offState = rs.getString("offSate");
+            String offCountry = rs.getString("offCountry");
+            String offZip = rs.getString("offZip");
+            String phnNum = rs.getString("offPhnNum");
+            String emailId = rs.getString("email");
+            String companyLogo = rs.getString("companyLogo");
+            
 
             Double previousBal=rs.getDouble("Previous_balance");
             Double chargeAmount=rs.getDouble("Charges_amount");
@@ -189,7 +192,7 @@ public class BillMasterReadPlatformServiceImplementation implements
 
             return new BillDetailsData(id,clientId,addrNo,clientName,billPeriod,street,zip,city,
 			state,country,previousBal,chargeAmount,adjustmentAmount,taxAmount,
-			paidAmount,adjustAndPayment,billDate,dueDate,message);
+			paidAmount,adjustAndPayment,billDate,dueDate,message,addr1,addr2,offCity,offState,offCountry,offZip,phnNum,emailId,companyLogo);
 			}
 
 

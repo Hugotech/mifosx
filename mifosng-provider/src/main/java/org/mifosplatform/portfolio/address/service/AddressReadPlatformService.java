@@ -21,6 +21,8 @@ public interface AddressReadPlatformService {
 
 	List<String> retrieveCityDetails();
 
+	List<AddressData> retrieveCityDetails(String selectedname);
+
 	
 
 	

@@ -79,7 +79,7 @@ public class InvoiceOneTimeSale {
 			if (oneTimeSaleData.getIsInvoiced().equalsIgnoreCase("N")) {
 
 				BillingOrderData billingOrderData = new BillingOrderData(
-						oneTimeSaleData.getItemId(),
+						oneTimeSaleData.getId(),
 						oneTimeSaleData.getClientId(),
 						new LocalDate().toDate(),
 						oneTimeSaleData.getChargeCode(), "NRC",
@@ -90,7 +90,7 @@ public class InvoiceOneTimeSale {
 
 				BillingOrderCommand billingOrderCommand = new BillingOrderCommand(
 						billingOrderData.getClientOrderId(),
-						billingOrderData.getClientOrderId(),
+						new Long(0),
 						billingOrderData.getClientId(),
 						new LocalDate().toDate(), null,
 						new LocalDate().toDate(), null,

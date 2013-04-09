@@ -1,5 +1,6 @@
 package org.mifosplatform.portfolio.billingorder.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.joda.time.Days;
@@ -52,7 +53,7 @@ public class InvoiceClient {
 		this.adjustmentReadPlatformService = adjustmentReadPlatformService;
 	}
 
-	public void invoicingSingleClient(Long clientId, LocalDate processDate) {
+	public BigDecimal invoicingSingleClient(Long clientId, LocalDate processDate) {
 
 		// Get list of qualified orders
 		//List<Long> orderIds = billingOrderReadPlatformService.retrieveOrderIds(clientId, processDate);
@@ -60,20 +61,21 @@ public class InvoiceClient {
 		if (billingOrderIds.size() == 0) {
 			throw new BillingOrderNoRecordsFoundException();
 		}
-		
+		   BigDecimal invoiceAmount=BigDecimal.ZERO;
 		for (BillingOrderData billingOrderId  : billingOrderIds) {
 			LocalDate billStartDate = new LocalDate(billingOrderId.getStartDate());
 			int qualifiedNumberOfTimes = getQualifiedNumberOfTimes(billStartDate, processDate, billingOrderId.getDurationType());
 			int noOfTimes = 0;
 			while(noOfTimes!=qualifiedNumberOfTimes){
-				invoiceServices(billingOrderId.getOrderId(),clientId,processDate);
+	        BigDecimal invoicePrice=invoiceServices(billingOrderId.getOrderId(),clientId,processDate);
+	               invoiceAmount=invoiceAmount.add(invoicePrice);
 				noOfTimes++;
 			}
 		}
-		
+		return invoiceAmount;
 	}
 	
-	public void invoiceServices(Long orderId,Long clientId,LocalDate processDate){
+	public BigDecimal invoiceServices(Long orderId,Long clientId,LocalDate processDate){
 		
 
 			// Charges
@@ -101,9 +103,10 @@ public class InvoiceClient {
 			// Update order-price
 			@SuppressWarnings("unused")
 			CommandProcessingResult entityIdentifier = billingOrderWritePlatformService.updateOrderPrice(billingOrderCommands);
-			// TODO Auto-generated method stub
-			
-		
+               if(invoiceCommand.getInvoiceAmount() == null){
+            	   return BigDecimal.ZERO;
+               }
+		return invoiceCommand.getInvoiceAmount();
 	}
 	
 	public Integer getQualifiedNumberOfTimes(LocalDate billStartDate , LocalDate processDate,String durationType ){

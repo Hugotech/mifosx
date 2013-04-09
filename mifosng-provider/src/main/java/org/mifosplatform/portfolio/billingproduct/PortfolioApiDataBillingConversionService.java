@@ -2,6 +2,7 @@ package org.mifosplatform.portfolio.billingproduct;
 
 import org.joda.time.LocalDate;
 import org.mifosplatform.portfolio.address.command.AddressCommand;
+import org.mifosplatform.portfolio.address.data.EntityTypecommand;
 import org.mifosplatform.portfolio.adjustment.commands.AdjustmentCommand;
 import org.mifosplatform.portfolio.billingcycle.command.BillingCycleCommand;
 import org.mifosplatform.portfolio.billingmaster.command.BillMasterCommand;
@@ -81,5 +82,7 @@ public interface PortfolioApiDataBillingConversionService {
 	OneTimeSaleCommand convertJsonToSalesCommand(Object object,	String jsonRequestBody);
 
 	ItemCommand convertJsonToItemCommand(Object object, String jsonRequestBody);
+
+	EntityTypecommand convertJsonToEntityTypeCommand(Object object, String jsonRequestBody);
 
 }

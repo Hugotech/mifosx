@@ -8,12 +8,14 @@ import org.mifosplatform.infrastructure.core.data.ApiParameterError;
 import org.mifosplatform.infrastructure.core.data.CommandProcessingResult;
 import org.mifosplatform.infrastructure.core.data.DataValidatorBuilder;
 import org.mifosplatform.infrastructure.security.service.PlatformSecurityContext;
+import org.mifosplatform.portfolio.adjustment.domain.ClientBalance;
+import org.mifosplatform.portfolio.adjustment.domain.ClientBalanceRepository;
+import org.mifosplatform.portfolio.adjustment.service.UpdateClientBalance;
 import org.mifosplatform.portfolio.itemmaster.domain.ItemMaster;
 import org.mifosplatform.portfolio.itemmaster.domain.ItemMasterRepository;
 import org.mifosplatform.portfolio.onetimesale.command.OneTimeSaleCommand;
 import org.mifosplatform.portfolio.onetimesale.domain.OneTimeSale;
 import org.mifosplatform.portfolio.onetimesale.domain.OneTimeSaleRepository;
-import org.mifosplatform.portfolio.plan.service.PlanCommandValidator;
 import org.mifosplatform.portfolio.savingsdepositaccount.exception.DepositAccountNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,19 +29,24 @@ public class OneTimeSaleWritePlatformServiceImpl implements OneTimeSaleWritePlat
 	private PlatformSecurityContext context;
 	private OneTimeSaleRepository  oneTimeSaleRepository;
 	private ItemMasterRepository itemMasterRepository;
+	private final UpdateClientBalance updateClientBalance;
+	private final ClientBalanceRepository clientBalanceRepository;
 	@Autowired
 	public OneTimeSaleWritePlatformServiceImpl(final PlatformSecurityContext context,final OneTimeSaleRepository oneTimeSaleRepository,
-			final ItemMasterRepository itemMasterRepository)
+			final UpdateClientBalance updateClientBalance,final ItemMasterRepository itemMasterRepository,
+			final ClientBalanceRepository clientBalanceRepository)
 	{
 		this.context=context;
 		this.oneTimeSaleRepository=oneTimeSaleRepository;
 		this.itemMasterRepository=itemMasterRepository;
+		this.updateClientBalance=updateClientBalance;
+		this.clientBalanceRepository=clientBalanceRepository;
 	}
 
 	 @Transactional
 	@Override
 	public CommandProcessingResult createOneTimeSale(
-			OneTimeSaleCommand command, Long clientId) {
+			OneTimeSaleCommand command, Long clientId,Long clientBalanceId) {
 		try{
 			
 			this.context.authenticatedUser();
@@ -47,7 +54,7 @@ public class OneTimeSaleWritePlatformServiceImpl implements OneTimeSaleWritePlat
 			validator.validateForCreate();
 			ItemMaster itemMaster=this.itemMasterRepository.findOne(command.getItemId());
 			OneTimeSale oneTimeSale=new OneTimeSale(clientId,command.getItemId(),itemMaster.getUnits(),command.getQuantity(),command.getChargeCode(),
-					command.getUnitPrice(),command.getTotalPrice());
+					command.getUnitPrice(),command.getTotalPrice(),command.getSaleDate());
 			
 			this.oneTimeSaleRepository.save(oneTimeSale);
 			return new CommandProcessingResult(Long.valueOf(oneTimeSale.getId()));

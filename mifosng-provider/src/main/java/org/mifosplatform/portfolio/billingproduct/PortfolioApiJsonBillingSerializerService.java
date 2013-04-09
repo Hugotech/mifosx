@@ -114,6 +114,8 @@ String serializeItemDataToJson(boolean prettyPrint,	Set<String> responseParamete
 String serializeItemDataToJson(boolean prettyPrint,
 		Set<String> responseParameters, List<ItemData> itemData);
 
+String serializePricingDataToJson(boolean prettyPrint,Set<String> responseParameters, OneTimeSaleData salesData);
+
 
 
 

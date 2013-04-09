@@ -28,11 +28,20 @@ private String date;
 private String transaction;
 private String amount;
 private String payments;
+private String addr1;
+private String addr2;
+private String offCity;
+private String offState;
+private String offCountry;
+private String offZip;
+private String phnNum;
+private String emailId;
+private String companyLogo;
 	public BillDetailsData(Long id, Long clientId, String addrNo, String clientName,
 			String billPeriod, String street, String zipcode, String city,
 			String state, String country, Double previousBal,
 			Double chargeAmount, Double adjustmentAmount, Double taxAmount,
-			Double paidAmount, Double dueAmount,LocalDate billDate,LocalDate duDate,String message) {
+			Double paidAmount, Double dueAmount,LocalDate billDate,LocalDate duDate,String message, String addr1, String addr2, String offCity, String offState, String offCountry, String offZip, String phnNum, String emailId, String companyLogo) {
 
 		this.id=id;
 		this.addrNo=addrNo;
@@ -53,6 +62,15 @@ private String payments;
 		this.billDate=billDate;
 		this.dueDate=duDate;
 		this.promotionalMessage=message;
+		this.addr1=addr1;
+		this.addr2=addr2;
+		this.offCity=offCity;
+		this.offState=offState;
+		this.offCountry=offCountry;
+		this.offZip=offZip;
+		this.phnNum=phnNum;
+		this.emailId=emailId;
+		this.companyLogo=companyLogo;
 
 	}
 
@@ -60,6 +78,7 @@ private String payments;
 		return id;
 	}
 
+	
 	public Long getClientId() {
 		return clientId;
 	}
@@ -184,6 +203,42 @@ private String payments;
 
 	public String getMessage() {
 		return promotionalMessage;
+	}
+
+	public String getAddr1() {
+		return addr1;
+	}
+
+	public String getAddr2() {
+		return addr2;
+	}
+
+	public String getOffCity() {
+		return offCity;
+	}
+
+	public String getOffState() {
+		return offState;
+	}
+
+	public String getOffCountry() {
+		return offCountry;
+	}
+
+	public String getOffZip() {
+		return offZip;
+	}
+
+	public String getPhnNum() {
+		return phnNum;
+	}
+
+	public String getEmailId() {
+		return emailId;
+	}
+
+	public String getCompanyLogo() {
+		return companyLogo;
 	}
 
 
